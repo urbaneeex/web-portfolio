@@ -1,0 +1,53 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Your Name — Web Developer & Interface Designer",
+  description = "A web developer focused on typography, clarity and the written record. Clean, accessible, performant interfaces for long-form content.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#070a12" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+
+    <!-- Swap the no-js class as early as possible -->
+    <script is:inline>
+      document.documentElement.classList.remove("no-js");
+    </script>
+  </head>
+  <body>
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:text-paper"
+      >Skip to content</a
+    >
+    <slot />
+    <script>
+      import { destroyLenis, initLenis } from "../lib/scroll/initLenis";
+
+      initLenis();
+
+      document.addEventListener("astro:beforeunload", () => {
+        destroyLenis();
+      });
+    </script>
+  </body>
+</html>

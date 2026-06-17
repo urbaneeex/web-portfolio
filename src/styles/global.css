@@ -1,0 +1,349 @@
+@import "tailwindcss";
+
+/* Self-hosted variable fonts (privacy-friendly, performant) */
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+
+@font-face {
+  font-family: "Aux Mono";
+  src: url("/auxmonofont.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Breton";
+  src: url("/Breton.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Zirena";
+  src: url("/Zirena.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Helavite";
+  src: url("/HelavitePixel.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  /* Typography */
+  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  --font-pixel: "Aux Mono", ui-monospace, monospace;
+  --font-breton: "Breton", Georgia, serif;
+  --font-zirena: "Zirena", ui-sans-serif, sans-serif;
+  --font-helavite: "Helavite", ui-sans-serif, sans-serif;
+
+  /* Palette — hero/intro/work negro puro; resto navy */
+  --color-hero-black: #000000;
+  --color-paper: #070a12;
+  --color-surface: #0f1524;
+  --color-surface-2: #161d30;
+  --color-ink: #eef1f8;
+  --color-ink-soft: #a7b1c6;
+  --color-muted: #707b95;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-accent: #5b8def;
+  --color-accent-soft: #86a9ff;
+  --color-accent-ink: #9bb8ff;
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Unified horizontal page margin */
+  --page-x: clamp(1.25rem, 3.5vw, 2.75rem);
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: auto;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  html.hero-scroll-active {
+    scroll-behavior: auto;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv01";
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-accent) 18%, transparent);
+    color: var(--color-accent-ink);
+  }
+
+  /* Keep focus visible and on-brand for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 460;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer components {
+  /* Shared horizontal inset — nav, hero, sections */
+  .page-x {
+    padding-inline: var(--page-x);
+  }
+
+  /* Tipografía lead About — compartida Hero + Contact */
+  .hero-intro__lead {
+    margin: 0;
+    font-size: clamp(1.9rem, 4.35vw, 3rem);
+    line-height: 1.35;
+    letter-spacing: -0.045em;
+    text-align: left;
+    color: #fff;
+  }
+
+  .hero-intro__lead--on-light {
+    color: var(--color-ink);
+  }
+
+  .hero-intro__lead-line {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .hero-intro__lead-line--second {
+    display: block;
+    font-family: var(--font-zirena);
+    font-weight: 500;
+    letter-spacing: -0.045em;
+  }
+
+  .hero-intro__accent {
+    font-style: italic;
+    letter-spacing: -0.17em;
+    word-spacing: -0.18em;
+    -webkit-text-stroke: 0.35px currentColor;
+    paint-order: stroke fill;
+  }
+
+  .hero-intro__rest {
+    font-family: var(--font-zirena);
+    font-weight: 500;
+    letter-spacing: -0.045em;
+    margin-inline-start: 0.32em;
+  }
+
+  .hero-intro__rest--first {
+    margin-inline-start: 0;
+    margin-inline-end: 0.22em;
+  }
+
+  @media (max-width: 768px) {
+    .hero-intro__lead-line {
+      white-space: normal;
+    }
+  }
+
+  #site-nav {
+    background: transparent;
+    pointer-events: none;
+  }
+
+  #site-nav nav {
+    mix-blend-mode: difference;
+    color: #fff;
+    pointer-events: auto;
+  }
+
+  /* Contact: fondo blanco rompe el blend — texto oscuro fijo */
+  #site-nav.nav--on-light nav {
+    mix-blend-mode: normal;
+    color: #0a0a0a;
+  }
+
+  html.nav-menu-open {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  html.nav-menu-open body {
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
+  }
+
+  .nav-link {
+    font-family: var(--font-pixel);
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    color: inherit;
+  }
+
+  /* Nombre en header: mismo estilo que .nav-link */
+  .hero-name {
+    margin: 0;
+    font-family: var(--font-pixel);
+    letter-spacing: -0.17em;
+    color: inherit;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .hero-name.is-active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .nav-link__slot {
+    position: relative;
+    display: inline-block;
+  }
+
+  .nav-link__ghost {
+    visibility: hidden;
+    user-select: none;
+  }
+
+  .nav-link__static {
+    position: absolute;
+    inset: 0;
+    white-space: nowrap;
+  }
+
+  .nav-link__live {
+    position: absolute;
+    inset: 0;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    font-family: var(--font-pixel);
+    letter-spacing: -0.05em;
+  }
+
+  .nav-link.is-nav-hover .nav-link__static {
+    visibility: hidden;
+  }
+
+  .nav-link.is-nav-hover .nav-link__live {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .nav-link__cursor {
+    opacity: 0;
+  }
+
+  .nav-link.is-nav-hover .nav-link__cursor {
+    opacity: 1;
+  }
+
+  [data-hero-name] {
+    font-family: var(--font-pixel);
+    letter-spacing: -0.17em;
+  }
+
+  /* Subtle blurred glass surface used sparingly */
+  .glass {
+    background-color: color-mix(in srgb, var(--color-surface) 70%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 6%, transparent);
+  }
+
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-accent-ink);
+  }
+
+  /* Elements revealed by GSAP start hidden; fallback shows them if JS is off */
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    will-change: transform, opacity;
+  }
+
+  /* Typewriter cursor blink */
+  .typewriter-cursor {
+    display: inline-block;
+    animation: cursor-blink 0.85s step-end infinite;
+  }
+
+  main {
+    background-color: var(--color-hero-black);
+  }
+
+  .chapter-hero-work {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background-color: var(--color-hero-black);
+    color: var(--color-ink);
+  }
+
+  .chapter-hero-work .hero-scene {
+    border: none;
+    box-shadow: none;
+  }
+
+  .pin-spacer {
+    background-color: var(--color-hero-black);
+    border: none;
+    box-shadow: none;
+  }
+
+  .pin-spacer:has(> .contact-scene) {
+    background-color: #ffffff;
+  }
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* If JavaScript is disabled, never hide content */
+.no-js .reveal {
+  opacity: 1;
+  transform: none;
+}

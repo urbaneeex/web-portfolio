@@ -1,0 +1,477 @@
+---
+import { nav, site, menuSocials } from "../data/site";
+---
+
+<header id="site-nav" class="site-nav fixed inset-x-0 top-0 z-50" data-nav>
+  <nav class="page-x nav-bar" aria-label="Primary">
+    <h1
+      data-hero-name
+      data-first={site.firstName}
+      data-last={site.lastName}
+      aria-label={`${site.firstName} ${site.lastName}`}
+      class="hero-name font-pixel nav-bar__brand pointer-events-none min-w-0 shrink leading-[1.02]"
+    >
+      <span class="block min-h-[1em] whitespace-nowrap">
+        <span id="hero-tw-text"></span><span id="hero-tw-cursor" class="typewriter-cursor">|</span>
+      </span>
+    </h1>
+
+    <button
+      type="button"
+      class="nav-toggle"
+      data-nav-toggle
+      aria-expanded="false"
+      aria-controls="nav-menu"
+      aria-label="Abrir menú"
+    >
+      <span class="nav-toggle__icon" aria-hidden="true">
+        <span class="nav-toggle__line"></span>
+        <span class="nav-toggle__line"></span>
+      </span>
+    </button>
+
+    <div class="nav-menu" data-nav-menu id="nav-menu" aria-hidden="true">
+      <ul class="nav-menu__list">
+        {
+          nav.map((item, index) => (
+            <li class="nav-menu__item">
+              <a
+                href={item.href}
+                data-nav-link
+                data-nav-label={item.label}
+                class="nav-link nav-menu__link font-pixel"
+              >
+                <span class="nav-menu__index" aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span class="nav-link__slot">
+                  <span class="nav-link__ghost" aria-hidden="true">{item.label}</span>
+                  <span class="nav-link__static">{item.label}</span>
+                  <span class="nav-link__live" aria-hidden="true">
+                    <span class="nav-link__typed"></span><span class="nav-link__cursor typewriter-cursor">|</span>
+                  </span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="nav-menu__socials">
+        {
+          menuSocials.map((item) => (
+            <a
+              href={item.href}
+              class="nav-menu__social-link"
+              aria-label={item.label}
+              target={item.href.startsWith("mailto:") ? undefined : "_blank"}
+              rel={item.href.startsWith("mailto:") ? undefined : "noopener noreferrer"}
+            >
+              <img src={item.icon} alt="" width="40" height="40" loading="lazy" decoding="async" />
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </nav>
+</header>
+
+<style>
+  .nav-bar {
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: clamp(1.1rem, 3vh, 1.5rem);
+  }
+
+  .nav-bar__brand {
+    position: relative;
+    z-index: 52;
+    flex: 1;
+    min-width: 0;
+    font-size: clamp(1.25rem, 5.5vw, 1.875rem);
+  }
+
+  .nav-toggle {
+    display: none;
+    position: relative;
+    z-index: 52;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .nav-toggle__icon {
+    position: relative;
+    display: block;
+    width: 1.35rem;
+    height: 0.9rem;
+  }
+
+  .nav-toggle__line {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+    transform-origin: center;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      top 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      bottom 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .nav-toggle__line:first-child {
+    top: 0;
+  }
+
+  .nav-toggle__line:last-child {
+    bottom: 0;
+  }
+
+  .site-nav.is-menu-open .nav-toggle__line:first-child {
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+  }
+
+  .site-nav.is-menu-open .nav-toggle__line:last-child {
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%) rotate(-45deg);
+  }
+
+  .nav-menu {
+    display: flex;
+    align-items: center;
+    gap: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .nav-menu__list {
+    display: flex;
+    align-items: center;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav-menu__index {
+    display: none;
+  }
+
+  .nav-menu__socials {
+    display: none;
+  }
+
+  @media (max-width: 767px) {
+    .nav-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .nav-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 51;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: stretch;
+      padding: clamp(5.5rem, 14vh, 7rem) var(--page-x) clamp(2.5rem, 8vh, 4rem);
+      background: rgba(8, 8, 8, 0.96);
+      backdrop-filter: blur(18px) saturate(120%);
+      -webkit-backdrop-filter: blur(18px) saturate(120%);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .site-nav.is-menu-open .nav-menu {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .site-nav.is-menu-open nav {
+      mix-blend-mode: normal;
+      color: #fff;
+    }
+
+    .nav-menu__list {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      width: 100%;
+    }
+
+    .nav-menu__item {
+      width: 100%;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-menu__item:last-child {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-menu__link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      padding-block: clamp(1.1rem, 3.5vh, 1.45rem);
+      font-size: clamp(1.75rem, 8vw, 2.5rem);
+      letter-spacing: -0.06em;
+      text-transform: uppercase;
+      color: #fff;
+      text-decoration: none;
+      transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+
+    .site-nav.is-menu-open .nav-menu__link {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .site-nav.is-menu-open .nav-menu__item:nth-child(1) .nav-menu__link { transition-delay: 0.05s; }
+    .site-nav.is-menu-open .nav-menu__item:nth-child(2) .nav-menu__link { transition-delay: 0.1s; }
+    .site-nav.is-menu-open .nav-menu__item:nth-child(3) .nav-menu__link { transition-delay: 0.15s; }
+    .site-nav.is-menu-open .nav-menu__item:nth-child(4) .nav-menu__link { transition-delay: 0.2s; }
+
+    .nav-menu__link:active {
+      opacity: 0.55;
+    }
+
+    .nav-menu__index {
+      display: inline-block;
+      min-width: 1.75rem;
+      font-family: var(--font-zirena);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.42);
+    }
+
+    .nav-menu__link .nav-link__live {
+      display: none;
+    }
+
+    .nav-menu__socials {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: clamp(2.25rem, 9vw, 3.5rem);
+      width: 100%;
+      margin-top: auto;
+      padding-top: clamp(2rem, 6vh, 3rem);
+      opacity: 0;
+      transform: translateY(0.5rem);
+      transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .site-nav.is-menu-open .nav-menu__socials {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.25s;
+    }
+
+    .nav-menu__social-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 4rem;
+      height: 4rem;
+      border-radius: 999px;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .nav-menu__social-link:active {
+      opacity: 0.55;
+      transform: scale(0.94);
+    }
+
+    .nav-menu__social-link img {
+      display: block;
+      width: clamp(2.15rem, 7.5vw, 2.75rem);
+      height: clamp(2.15rem, 7.5vw, 2.75rem);
+      filter: invert(1);
+      opacity: 0.88;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .nav-menu__link {
+      font-size: 1.0625rem;
+      letter-spacing: -0.05em;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-menu,
+    .nav-menu__link,
+    .nav-toggle__line {
+      transition: none;
+    }
+
+    .nav-menu__link {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  import { setupScrollNavLinks } from "../lib/scroll/navScroll";
+  import { getLenis } from "../lib/scroll/initLenis";
+  import { SCROLL_EVENTS } from "../lib/scroll/scrollConfig";
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const MOBILE_NAV_MQ = window.matchMedia("(max-width: 767px)");
+
+  setupScrollNavLinks();
+
+  const sleep = (ms: number, signal?: AbortSignal) =>
+    new Promise<void>((resolve, reject) => {
+      const id = window.setTimeout(resolve, ms);
+      signal?.addEventListener(
+        "abort",
+        () => {
+          window.clearTimeout(id);
+          reject(new DOMException("aborted", "AbortError"));
+        },
+        { once: true },
+      );
+    });
+
+  if (!reduceMotion) {
+    document.querySelectorAll<HTMLAnchorElement>("[data-nav-link]").forEach((link) => {
+      const label = link.dataset.navLabel ?? "";
+      const typedEl = link.querySelector<HTMLElement>(".nav-link__typed");
+      let controller: AbortController | null = null;
+
+      link.addEventListener("mouseenter", () => {
+        if (!typedEl || !label || MOBILE_NAV_MQ.matches) return;
+        controller?.abort();
+        controller = new AbortController();
+        const { signal } = controller;
+
+        (async () => {
+          link.classList.add("is-nav-hover");
+          typedEl.textContent = "";
+          for (const ch of label) {
+            typedEl.textContent += ch;
+            await sleep(55, signal);
+          }
+        })().catch(() => {});
+      });
+
+      link.addEventListener("mouseleave", () => {
+        controller?.abort();
+        controller = null;
+        if (typedEl) typedEl.textContent = "";
+        link.classList.remove("is-nav-hover");
+      });
+    });
+  }
+
+  const navEl = document.getElementById("site-nav");
+  const toggleBtn = document.querySelector<HTMLButtonElement>("[data-nav-toggle]");
+  const menuEl = document.querySelector<HTMLElement>("[data-nav-menu]");
+  const heroSection = document.getElementById("hero-scene");
+  const contactSection = document.querySelector<HTMLElement>("[data-contact-section]");
+
+  const setMenuOpen = (open: boolean) => {
+    if (!navEl || !toggleBtn || !menuEl) return;
+
+    navEl.classList.toggle("is-menu-open", open);
+    toggleBtn.setAttribute("aria-expanded", String(open));
+    toggleBtn.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
+    menuEl.setAttribute("aria-hidden", String(!open));
+    document.documentElement.classList.toggle("nav-menu-open", open);
+
+    const lenis = getLenis();
+    if (open) {
+      lenis?.stop();
+    } else {
+      lenis?.start();
+    }
+  };
+
+  const blockBackgroundScroll = (event: Event) => {
+    if (!navEl?.classList.contains("is-menu-open")) return;
+    const target = event.target as Node | null;
+    if (menuEl?.contains(target)) return;
+    event.preventDefault();
+  };
+
+  document.addEventListener("wheel", blockBackgroundScroll, { passive: false });
+  document.addEventListener("touchmove", blockBackgroundScroll, { passive: false });
+
+  toggleBtn?.addEventListener("click", () => {
+    setMenuOpen(!navEl?.classList.contains("is-menu-open"));
+  });
+
+  menuEl?.querySelectorAll<HTMLAnchorElement>("a").forEach((link) => {
+    link.addEventListener("click", () => setMenuOpen(false));
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setMenuOpen(false);
+  });
+
+  const handleViewportChange = () => {
+    if (!MOBILE_NAV_MQ.matches) setMenuOpen(false);
+  };
+
+  MOBILE_NAV_MQ.addEventListener("change", handleViewportChange);
+  window.addEventListener("resize", handleViewportChange, { passive: true });
+
+  const sectionUnderNav = (el: HTMLElement, navH: number) => {
+    const { top, bottom } = el.getBoundingClientRect();
+    return top < navH && bottom > 0;
+  };
+
+  const updateNavContrast = () => {
+    if (!navEl) return;
+    const navH = navEl.getBoundingClientRect().height;
+    let onLightBg = false;
+
+    if (heroSection && sectionUnderNav(heroSection, navH)) {
+      onLightBg = !heroSection.classList.contains("hero-scene--black");
+    }
+
+    if (contactSection && sectionUnderNav(contactSection, navH)) {
+      onLightBg = true;
+    }
+
+    navEl.classList.toggle("nav--on-light", onLightBg);
+  };
+
+  const bindNavContrastScroll = () => {
+    updateNavContrast();
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.on("scroll", updateNavContrast);
+    } else {
+      window.addEventListener("scroll", updateNavContrast, { passive: true });
+    }
+  };
+
+  bindNavContrastScroll();
+  requestAnimationFrame(bindNavContrastScroll);
+  window.addEventListener("resize", updateNavContrast, { passive: true });
+  window.addEventListener(SCROLL_EVENTS.heroZoomChange, updateNavContrast);
+</script>

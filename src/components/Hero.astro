@@ -1,0 +1,637 @@
+<section
+  id="hero-scene"
+  class="hero-scene"
+  data-hero
+  data-dither-section
+  aria-label="Hero"
+>
+  <div id="top" class="hero-scene__anchor" aria-hidden="true"></div>
+  <canvas class="hero-canvas webgl"></canvas>
+
+  <div class="hero-scroll-reveal" data-hero-scroll-text aria-hidden="true">
+    <img
+      class="hero-intro__photo"
+      data-hero-intro-photo
+      src="/alex blur.webp"
+      alt=""
+      width="480"
+      height="640"
+      decoding="async"
+      aria-hidden="true"
+    />
+    <div id="about" class="hero-intro page-x scroll-mt-24" aria-label="About">
+      <div class="hero-intro__stage">
+        <div class="hero-intro__copy" data-hero-intro-copy>
+          <p class="hero-intro__lead" data-hero-intro-lead>
+            <span class="hero-intro__lead-line" data-hero-line>
+              <span class="hero-intro__accent font-pixel">Creative developer</span><br class="hero-intro__br-mobile" aria-hidden="true" /><span class="hero-intro__rest">building interfaces</span><br class="hero-intro__br-mobile" aria-hidden="true" />
+            </span>
+            <span class="hero-intro__lead-line--second" data-hero-line>where structure meets feeling</span>
+          </p>
+          <p class="hero-intro__body" data-hero-intro-body>
+            <span class="hero-intro__line" data-hero-line>My name is Alejandro Rodríguez.</span>
+            <span class="hero-intro__line" data-hero-line>
+              <span class="hero-intro__accent hero-intro__accent--body font-pixel">I build websites and applications</span> from the inside out — get the logic right, and the experience takes care of itself.
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-scene {
+    position: relative;
+    z-index: 10;
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: #ffffff;
+    overflow: hidden;
+    transition: background-color 0.35s ease;
+  }
+
+  .hero-scene.hero-scene--black {
+    background-color: var(--color-hero-black);
+  }
+
+  .hero-scene.hero-scene--black .hero-canvas {
+    background-color: var(--color-hero-black);
+  }
+
+  .hero-scene__anchor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    background-color: #ffffff;
+    opacity: 0;
+  }
+
+  .hero-canvas.is-ready {
+    opacity: 1;
+  }
+
+  .hero-scroll-reveal {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 0;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0;
+  }
+
+  [data-hero-intro-photo] {
+    opacity: 0;
+    will-change: transform, opacity, filter;
+  }
+
+  [data-hero-intro-lead],
+  [data-hero-intro-body] {
+    will-change: transform, opacity, filter;
+  }
+
+  [data-hero-line] {
+    display: block;
+    opacity: 0;
+    will-change: opacity, filter;
+  }
+
+  .hero-intro {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    color: #fff;
+  }
+
+  .hero-intro__stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    justify-content: flex-start;
+    min-height: 100%;
+    padding-top: clamp(4.5rem, 14vh, 8.5rem);
+  }
+
+  .hero-intro__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: min(52rem, 100%);
+    width: fit-content;
+    will-change: transform, opacity;
+  }
+
+  .hero-intro__photo {
+    position: absolute;
+    top: 52%;
+    right: 0;
+    z-index: 0;
+    height: clamp(34rem, 90vh, 64rem);
+    width: auto;
+    max-width: min(78vw, 54rem);
+    object-fit: contain;
+    object-position: right center;
+    transform: translateY(-50%);
+    border-radius: clamp(2.75rem, 4.5vw, 4.25rem) 0 0 clamp(2.75rem, 4.5vw, 4.25rem);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hero-intro__accent--body {
+    font-size: 1.14em;
+    margin-inline-end: 0.28em;
+  }
+
+  .hero-intro__lead {
+    position: relative;
+    z-index: 1;
+    align-self: flex-start;
+  }
+
+  .hero-intro__body {
+    margin: clamp(5.5rem, 14vh, 9rem) 0 0;
+    max-width: 68%;
+    width: 100%;
+    font-family: var(--font-zirena);
+    font-size: clamp(1.3125rem, 2.75vw, 1.625rem);
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: -0.05em;
+    word-spacing: -0.06em;
+    text-align: left;
+    text-wrap: pretty;
+    color: #fff;
+  }
+
+  .hero-intro__br-mobile {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .hero-intro__br-mobile {
+      display: block;
+    }
+
+    .hero-intro__lead-line .hero-intro__rest {
+      margin-inline-start: 0;
+    }
+
+    .hero-intro__photo {
+      top: 50%;
+      height: clamp(28rem, 74vh, 44rem);
+      max-width: min(88vw, 34rem);
+      border-radius: 2.25rem 0 0 2.25rem;
+      opacity: 0.6;
+    }
+
+    .hero-intro__body {
+      margin-top: clamp(14rem, 40vh, 22rem);
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { initDitherGrid } from "../lib/dither-grid/initDitherGrid";
+  import { scrollRiseFromBottom } from "../lib/animations/riseReveal";
+  import { revealBlurStaggerProgress } from "../lib/animations/revealBlur";
+  import { lenisScrollToY } from "../lib/scroll/initLenis";
+  import { HERO_SCROLL, SCROLL_EVENTS } from "../lib/scroll/scrollConfig";
+  import {
+    HERO_SCROLL_ID,
+    scrollYForTriggerProgress,
+  } from "../lib/scroll/scrollDirector";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const section = document.querySelector<HTMLElement>("[data-dither-section]");
+  const canvas = section?.querySelector<HTMLCanvasElement>(".hero-canvas");
+  const scrollText = document.querySelector<HTMLElement>("[data-hero-scroll-text]");
+  const introLeadEl = document.querySelector<HTMLElement>("[data-hero-intro-lead]");
+  const introBodyEl = document.querySelector<HTMLElement>("[data-hero-intro-body]");
+  const introCopyEl = document.querySelector<HTMLElement>("[data-hero-intro-copy]");
+  const introPhotoEl = document.querySelector<HTMLElement>("[data-hero-intro-photo]");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const nameEl = document.querySelector<HTMLElement>("[data-hero-name]");
+  const firstName = nameEl?.dataset.first ?? "";
+  const lastName = nameEl?.dataset.last ?? "";
+  const fullName = `${firstName} ${lastName}`.trim();
+  const textEl = document.getElementById("hero-tw-text");
+  const cursorEl = document.getElementById("hero-tw-cursor");
+  const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+  let typewriterDone = false;
+  let scrollTrigger: ScrollTrigger | null = null;
+  let onIntroResize: (() => void) | null = null;
+  let removeHeroClick: (() => void) | null = null;
+  let isHeroClickScrolling = false;
+
+  const FULL_ZOOM_AT = 0.999;
+  const ZOOM_PHASE_END = HERO_SCROLL.zoomPhaseEnd;
+  const INTRO_ENTER_END = HERO_SCROLL.introEnterEnd;
+  const INTRO_EXIT_END = HERO_SCROLL.introExitEnd;
+  const HERO_CLICK_TARGET_PROGRESS = HERO_SCROLL.clickTargetProgress;
+  const HERO_CLICK_START_MAX = HERO_SCROLL.clickStartMax;
+  const HERO_CLICK_DURATION = HERO_SCROLL.clickDuration;
+  /** Blur máximo de la foto hasta que su centro llega a ~50vh (y === 0 con yPercent:-50). */
+  const PHOTO_BLUR_MAX_PX = 14;
+  const TEXT_BLUR_FROM_PX = 12;
+
+  let introRevealLines: HTMLElement[] = [];
+
+  const initIntroLineTargets = () => {
+    introRevealLines = [
+      ...(introLeadEl?.querySelectorAll<HTMLElement>("[data-hero-line]") ?? []),
+      ...(introBodyEl?.querySelectorAll<HTMLElement>("[data-hero-line]") ?? []),
+    ];
+  };
+
+  const setLineRevealState = (
+    lines: HTMLElement[],
+    introP: number,
+    rangeStart: number,
+    rangeEnd: number,
+  ) => {
+    const count = lines.length;
+    lines.forEach((line, index) => {
+      const state = revealBlurStaggerProgress(
+        introP,
+        index,
+        count,
+        rangeStart,
+        rangeEnd,
+        TEXT_BLUR_FROM_PX,
+      );
+      gsap.set(line, {
+        opacity: state.opacity,
+        filter: state.blur > 0.05 ? `blur(${state.blur}px)` : "none",
+      });
+    });
+  };
+
+  const hideIntroLines = () => {
+    introRevealLines.forEach((line) => {
+      gsap.set(line, { opacity: 0, filter: `blur(${TEXT_BLUR_FROM_PX}px)` });
+    });
+  };
+
+  const showIntroLines = () => {
+    introRevealLines.forEach((line) => {
+      gsap.set(line, { opacity: 1, filter: "none", clearProps: "opacity,filter" });
+    });
+  };
+
+  initIntroLineTargets();
+
+  const scrollProgressToZoom = (progress: number) =>
+    Math.max(0, Math.min(1, progress / ZOOM_PHASE_END));
+
+  const mapProgress = (progress: number, start: number, end: number) => {
+    if (progress <= start) return 0;
+    if (progress >= end) return 1;
+    return (progress - start) / Math.max(0.001, end - start);
+  };
+
+  const scrollProgressToIntroEnter = (progress: number) =>
+    mapProgress(progress, ZOOM_PHASE_END, INTRO_ENTER_END);
+
+  const scrollProgressToIntroExit = (progress: number) =>
+    mapProgress(progress, INTRO_ENTER_END, INTRO_EXIT_END);
+
+  const scrollProgressToIntro = (progress: number) => {
+    const enter = scrollProgressToIntroEnter(progress);
+    const exit = scrollProgressToIntroExit(progress);
+    return Math.min(1, enter + exit * 0.35);
+  };
+
+  const smoothstep = (t: number) => {
+    const c = Math.max(0, Math.min(1, t));
+    return c * c * (3 - 2 * c);
+  };
+
+  type IntroMetrics = {
+    entryY: number;
+    exitEndY: number;
+    photoEntryY: number;
+    photoExitEndY: number;
+  };
+
+  let introMetrics: IntroMetrics = {
+    entryY: 900,
+    exitEndY: -900,
+    photoEntryY: 480,
+    photoExitEndY: -960,
+  };
+
+  const measureIntroMetrics = () => {
+    const vh = window.innerHeight;
+    introMetrics = {
+      entryY: vh * 1.02,
+      exitEndY: -vh * 1.18,
+      photoEntryY: vh * 0.58,
+      photoExitEndY: -vh * 1.28,
+    };
+  };
+
+  /** y=0 → centro en 50vh (nitida); y>0 → aún bajando, más blur. */
+  const photoBlurForY = (y: number, vh: number) => {
+    if (y <= 0) return 0;
+    const t = Math.min(1, y / (vh * 0.5));
+    return PHOTO_BLUR_MAX_PX * t * t;
+  };
+
+  const fadeIntroLinesOnExit = (exitP: number) => {
+    const fade = smoothstep(Math.min(1, exitP * 1.1));
+    introRevealLines.forEach((line) => {
+      gsap.set(line, {
+        opacity: Math.max(0, 1 - fade),
+        filter: fade > 0.04 ? `blur(${TEXT_BLUR_FROM_PX * fade}px)` : "none",
+      });
+    });
+  };
+
+  const applyIntroParallax = (progress: number) => {
+    const onBlack = progress >= ZOOM_PHASE_END;
+    const enterP = scrollProgressToIntroEnter(progress);
+    const exitP = scrollProgressToIntroExit(progress);
+    const exitEase = smoothstep(exitP);
+    section?.classList.toggle("hero-scene--black", onBlack);
+
+    if (scrollText) {
+      const visible = onBlack && exitEase < 0.98;
+      scrollText.style.opacity = visible ? String(1 - exitEase * 0.92) : "0";
+      scrollText.setAttribute("aria-hidden", visible ? "false" : "true");
+    }
+
+    if (reduceMotion) return;
+
+    if (!onBlack) {
+      if (introCopyEl) gsap.set(introCopyEl, { opacity: 0, y: introMetrics.entryY });
+      if (introLeadEl) gsap.set(introLeadEl, { opacity: 1, y: 0 });
+      if (introBodyEl) gsap.set(introBodyEl, { opacity: 1, y: 0 });
+      hideIntroLines();
+      if (introPhotoEl) {
+        gsap.set(introPhotoEl, {
+          opacity: 0,
+          yPercent: -50,
+          y: introMetrics.photoEntryY,
+          filter: `blur(${PHOTO_BLUR_MAX_PX}px)`,
+        });
+      }
+      return;
+    }
+
+    const copyEnter = scrollRiseFromBottom(
+      enterP,
+      0,
+      0.1,
+      1,
+      introMetrics.entryY,
+      0,
+      2.1,
+    );
+
+    const photoEnter = scrollRiseFromBottom(
+      enterP,
+      0.08,
+      0.2,
+      1,
+      introMetrics.photoEntryY,
+      0,
+      2,
+    );
+
+    const copyY =
+      exitP > 0
+        ? introMetrics.exitEndY * exitEase
+        : copyEnter.y;
+    const photoY =
+      exitP > 0
+        ? introMetrics.photoExitEndY * exitEase
+        : photoEnter.y;
+    const contentOpacity = exitP > 0 ? Math.max(0, 1 - exitEase) : 1;
+    const photoOpacity = exitP > 0 ? Math.max(0, 1 - exitEase) : photoEnter.opacity;
+
+    if (introCopyEl) {
+      gsap.set(introCopyEl, {
+        opacity: exitP > 0 ? contentOpacity : 1,
+        y: copyY,
+      });
+    }
+
+    if (introLeadEl) {
+      gsap.set(introLeadEl, {
+        opacity: exitP > 0 ? contentOpacity : 1,
+        y: 0,
+      });
+    }
+
+    if (introBodyEl) {
+      gsap.set(introBodyEl, {
+        opacity: exitP > 0 ? contentOpacity : 1,
+        y: 0,
+      });
+    }
+
+    if (exitP > 0) {
+      fadeIntroLinesOnExit(exitP);
+    } else {
+      setLineRevealState(introRevealLines, enterP, 0, 0.52);
+    }
+
+    if (introPhotoEl) {
+      const vh = window.innerHeight;
+      const blurPx = photoBlurForY(photoY, vh) + exitEase * 10;
+      gsap.set(introPhotoEl, {
+        opacity: photoOpacity,
+        yPercent: -50,
+        y: photoY,
+        filter: blurPx > 0.05 ? `blur(${blurPx}px)` : "none",
+      });
+    }
+  };
+
+  const resetIntroParallax = () => {
+    if (introCopyEl) gsap.set(introCopyEl, { opacity: 1, y: 0 });
+    if (introLeadEl) gsap.set(introLeadEl, { opacity: 1, y: 0 });
+    if (introBodyEl) gsap.set(introBodyEl, { opacity: 1, y: 0 });
+    showIntroLines();
+    if (introPhotoEl) {
+      gsap.set(introPhotoEl, { opacity: 1, y: 0, yPercent: -50, filter: "none" });
+    }
+  };
+
+  const setHeroZoomState = (progress: number, zoomProgress: number) => {
+    const root = document.documentElement;
+    const zoomComplete = zoomProgress >= FULL_ZOOM_AT;
+    if (zoomComplete) {
+      root.dataset.heroZoom = "full";
+    } else {
+      delete root.dataset.heroZoom;
+    }
+    window.dispatchEvent(
+      new CustomEvent(SCROLL_EVENTS.heroZoomChange, {
+        detail: { progress, zoomProgress, introProgress: scrollProgressToIntro(progress) },
+      }),
+    );
+  };
+
+  async function runTypewriter() {
+    if (!textEl || !cursorEl || !nameEl || typewriterDone) return;
+    typewriterDone = true;
+    textEl.textContent = "";
+    nameEl.classList.add("is-active");
+    for (const ch of firstName) {
+      textEl.textContent += ch;
+      await sleep(75);
+    }
+    await sleep(300);
+    for (const ch of ` ${lastName}`) {
+      textEl.textContent += ch;
+      await sleep(75);
+    }
+  }
+
+  const scrollYForHeroProgress = (progress: number) => {
+    if (!scrollTrigger) return 0;
+    return scrollYForTriggerProgress(scrollTrigger, progress);
+  };
+
+  const runHeroClickScroll = () => {
+    if (!scrollTrigger || isHeroClickScrolling) return;
+    if (scrollTrigger.progress > HERO_CLICK_START_MAX) return;
+
+    isHeroClickScrolling = true;
+
+    lenisScrollToY(scrollYForHeroProgress(HERO_CLICK_TARGET_PROGRESS), {
+      duration: HERO_CLICK_DURATION,
+      onComplete: () => {
+        isHeroClickScrolling = false;
+      },
+    });
+  };
+
+  const setupHeroClick = () => {
+    if (!section) return;
+
+    const onClick = () => {
+      runHeroClickScroll();
+    };
+
+    section.addEventListener("click", onClick);
+    removeHeroClick = () => {
+      section.removeEventListener("click", onClick);
+    };
+  };
+
+  function setupHeroScroll(setScrollZoom: (progress: number) => void) {
+    if (!section || reduceMotion) return;
+
+    measureIntroMetrics();
+    onIntroResize = () => {
+      measureIntroMetrics();
+      ScrollTrigger.refresh();
+    };
+    window.addEventListener("resize", onIntroResize);
+
+    const applyScrollUI = (progress: number) => {
+      const zoomProgress = scrollProgressToZoom(progress);
+      const zoomComplete = zoomProgress >= FULL_ZOOM_AT;
+
+      if (scrollText && !reduceMotion) {
+        applyIntroParallax(progress);
+      }
+
+      nameEl?.classList.toggle("hero-name--immersive", zoomComplete);
+      setHeroZoomState(progress, zoomProgress);
+    };
+
+    const updateFromScroll = (progress: number) => {
+      const p = Math.max(0, Math.min(1, progress));
+      setScrollZoom(scrollProgressToZoom(p));
+      applyScrollUI(p);
+    };
+
+    document.documentElement.classList.add("hero-scroll-active");
+
+    scrollTrigger = ScrollTrigger.create({
+      id: HERO_SCROLL_ID,
+      trigger: section,
+      start: "top top",
+      end: HERO_SCROLL.pinEnd,
+      pin: true,
+      pinSpacing: true,
+      scrub: HERO_SCROLL.scrub,
+      anticipatePin: 1,
+      invalidateOnRefresh: true,
+      onUpdate: (self) => updateFromScroll(self.progress),
+      onLeave: () => {
+        updateFromScroll(1);
+        window.dispatchEvent(new CustomEvent(SCROLL_EVENTS.heroComplete));
+      },
+      onEnterBack: (self) => updateFromScroll(self.progress),
+    });
+
+    ScrollTrigger.refresh();
+
+    updateFromScroll(0);
+    setupHeroClick();
+    window.dispatchEvent(new CustomEvent(SCROLL_EVENTS.heroReady));
+  }
+
+  if (reduceMotion) {
+    if (textEl) textEl.textContent = fullName;
+    nameEl?.classList.add("is-active");
+    scrollText?.style.setProperty("opacity", "1");
+    scrollText?.setAttribute("aria-hidden", "false");
+    resetIntroParallax();
+  } else if (section && canvas) {
+    const controller = initDitherGrid({
+      canvas,
+      onAnimationComplete: runTypewriter,
+    });
+
+    window.addEventListener(
+      "dither-animation-complete",
+      () => {
+        ScrollTrigger.refresh();
+        setupHeroScroll(controller.setScrollZoom);
+      },
+      { once: true },
+    );
+
+    document.addEventListener("astro:beforeunload", () => {
+      if (onIntroResize) window.removeEventListener("resize", onIntroResize);
+      removeHeroClick?.();
+      document.documentElement.classList.remove("hero-scroll-active");
+      section?.classList.remove("hero-scene--black");
+      scrollTrigger?.kill();
+      delete document.documentElement.dataset.heroZoom;
+      controller.dispose();
+    });
+  }
+</script>

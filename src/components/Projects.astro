@@ -1,0 +1,480 @@
+---
+import { workProjects } from "../data/site";
+
+const initial = workProjects[0];
+---
+
+<section
+  id="work"
+  class="work-section page-x scroll-mt-24"
+  data-work-section
+>
+  <div class="work-section__inner mx-auto max-w-[88rem]">
+    <div class="work-section__tour-track" data-work-tour-track>
+      <div class="work-section__tour-stage" data-work-tour-stage>
+        <div class="work-section__layout">
+          <div class="work-section__list" data-work-list role="tablist" aria-label="Projects">
+        {
+          workProjects.map((project, i) => (
+            <>
+              <button
+                type="button"
+                class:list={[
+                  "work-item",
+                  { "is-active": i === 0 },
+                ]}
+                role="tab"
+                aria-selected={i === 0}
+                aria-controls="work-preview-panel"
+                id={`work-tab-${project.id}`}
+                data-work-item
+                data-project-id={project.id}
+                data-project-index={project.index}
+                data-project-year={project.year}
+                data-project-title={project.title}
+                data-project-href={project.href}
+                data-project-image={project.image}
+                data-project-alt={project.imageAlt}
+              >
+                <span class="work-item__label font-pixel">
+                  <span class="work-item__label-slot">
+                    <span class="work-item__ghost" aria-hidden="true">{project.title}</span>
+                    <span class="work-item__static">{project.title}</span>
+                    <span class="work-item__live" aria-hidden="true">
+                      <span class="work-item__typed">{i === 0 ? project.title : ""}</span>
+                    </span>
+                  </span>
+                </span>
+              </button>
+              {i < workProjects.length - 1 && (
+                <div class="work-item__divider font-pixel" aria-hidden="true">
+                  ................................................................................................................................................................................................................
+                </div>
+              )}
+            </>
+          ))
+        }
+      </div>
+
+      <div
+        class="work-section__preview"
+        id="work-preview-panel"
+        role="tabpanel"
+        aria-labelledby={`work-tab-${initial.id}`}
+        data-work-preview
+      >
+        <div class="work-preview__frame" data-work-preview-frame>
+          <img
+            class="work-preview__image"
+            data-work-preview-image
+            src={initial.image}
+            alt={initial.imageAlt}
+            width={1200}
+            height={750}
+            decoding="async"
+          />
+        </div>
+        <a
+          class="work-preview__link font-pixel"
+          data-work-preview-link
+          href={initial.href}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open link
+          <svg class="work-preview__link-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path
+              d="M7 13L13 7M13 7H9M13 7V11"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </a>
+      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .work-section {
+    position: relative;
+    z-index: 3;
+    /* Iguala la altura del hero: Work entra cuando el pin termina (sin hueco de 100vh). */
+    margin-top: -100vh;
+    margin-top: -100dvh;
+    /* Solo abajo: no pisar el padding horizontal de .page-x */
+    padding-bottom: clamp(3.5rem, 8vh, 5rem);
+    border: none;
+    background-color: transparent;
+    color: var(--color-ink);
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  .work-section.is-work-ready,
+  .work-section.is-work-entering {
+    z-index: 12;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .work-section.is-work-ready {
+    opacity: 1;
+    will-change: auto;
+  }
+
+  .work-section:not(.is-work-ready):not(.is-work-entering) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .work-section.is-work-ready .work-section__tour-stage,
+  .work-section.is-work-entering .work-section__tour-stage {
+    height: 100dvh;
+    min-height: 100dvh;
+    box-sizing: border-box;
+  }
+
+  .work-section__tour-track {
+    position: relative;
+  }
+
+  .work-section__tour-stage {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(4.5rem, 10vh, 5.75rem) 0 clamp(2.5rem, 6vh, 3.5rem);
+    box-sizing: border-box;
+  }
+
+  .work-section__layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2.5rem, 6vw, 4rem);
+    align-items: center;
+    width: 100%;
+    min-height: calc(100dvh - clamp(7rem, 16vh, 9.25rem));
+  }
+
+  @media (max-width: 767px) {
+    .work-section {
+      padding-inline: clamp(1.35rem, 5vw, 2rem);
+    }
+
+    .work-section__layout {
+      gap: clamp(2rem, 5vh, 2.75rem);
+    }
+
+    .work-preview__link {
+      margin-right: 0;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .work-section__layout {
+      grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
+      gap: clamp(2rem, 4vw, 3.5rem);
+    }
+  }
+
+  .work-section__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    align-self: center;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .work-section.is-scroll-tour-active .work-section__preview {
+    will-change: auto;
+  }
+
+  .work-section.is-scroll-tour-active .work-preview__grid {
+    contain: layout style paint;
+  }
+
+  .work-item.is-active .work-item__static,
+  .work-item.is-work-hover .work-item__static {
+    visibility: hidden;
+  }
+
+  .work-item.is-active .work-item__live,
+  .work-item.is-work-hover .work-item__live {
+    opacity: 1;
+    visibility: visible;
+    color: #000;
+  }
+
+  .work-item.is-active .work-item__typed,
+  .work-item.is-work-hover .work-item__typed {
+    color: #000;
+    background-color: #fff;
+    -webkit-text-stroke: 0;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    padding: 0.06em 0.12em;
+  }
+
+  .work-section.is-scroll-tour-active .work-item {
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .work-section {
+      margin-top: 0;
+      opacity: 1;
+    }
+  }
+
+  .work-item {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: clamp(1.1rem, 2.5vh, 1.65rem) 0;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    color: color-mix(in srgb, var(--color-ink) 28%, transparent);
+    transition: color 0.35s var(--ease-out-soft);
+  }
+
+  .work-item.is-active {
+    color: var(--color-ink);
+  }
+
+  .work-item__label {
+    display: block;
+    font-family: var(--font-pixel);
+    font-size: clamp(1.65rem, 3.2vw, 2.35rem);
+    line-height: 1.15;
+    letter-spacing: -0.05em;
+    -webkit-text-stroke: 0.35px currentColor;
+    paint-order: stroke fill;
+  }
+
+  .work-item__label-slot {
+    position: relative;
+    display: inline-block;
+  }
+
+  .work-item__ghost {
+    visibility: hidden;
+    user-select: none;
+  }
+
+  .work-item__static {
+    position: absolute;
+    inset: 0;
+    white-space: nowrap;
+  }
+
+  .work-item__live {
+    position: absolute;
+    inset: 0;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .work-item.is-work-hover .work-item__static {
+    visibility: hidden;
+  }
+
+  .work-item.is-work-hover .work-item__live {
+    opacity: 1;
+    visibility: visible;
+    color: #000;
+  }
+
+  .work-item.is-work-hover .work-item__typed {
+    color: #000;
+    background-color: #fff;
+    -webkit-text-stroke: 0;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    padding: 0.06em 0.12em;
+  }
+
+  .work-item__divider {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: var(--font-pixel);
+    font-size: clamp(0.9375rem, 2.1vw, 1.25rem);
+    letter-spacing: 0.12em;
+    line-height: 1;
+    color: color-mix(in srgb, var(--color-ink) 42%, transparent);
+    -webkit-text-stroke: 0.3px currentColor;
+    paint-order: stroke fill;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .work-section__preview {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    align-self: center;
+  }
+
+  .work-preview__frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.35rem;
+    background: transparent;
+    aspect-ratio: 16 / 10;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  :global(.work-preview__grid) {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(var(--grid-cols), 1fr);
+    grid-template-rows: repeat(var(--grid-rows), 1fr);
+    pointer-events: none;
+  }
+
+  :global(.work-preview__cell) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-pixel);
+    font-size: clamp(5px, 0.48vw, 8px);
+    line-height: 1;
+    letter-spacing: 0;
+    color: #fff;
+    opacity: 0;
+    transform: scale(0.88);
+    -webkit-text-stroke: 0;
+    overflow: hidden;
+    text-transform: lowercase;
+  }
+
+  :global(.work-preview__cell.is-active) {
+    opacity: 1;
+    transform: scale(1);
+    image-rendering: pixelated;
+  }
+
+  :global(.work-preview__cell.is-active.is-empty) {
+    color: transparent;
+    background-color: rgba(0, 0, 0, 0.72);
+  }
+
+  .work-preview__image {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    transform-origin: center center;
+  }
+
+  :global(.work-preview__image--outgoing.is-transitioning) {
+    z-index: 1;
+    image-rendering: pixelated;
+    -webkit-mask-mode: luminance;
+    mask-mode: luminance;
+  }
+
+  :global(.work-preview__image--incoming.is-transitioning) {
+    z-index: 0;
+  }
+
+  :global(.work-preview__image--incoming) {
+    z-index: 0;
+  }
+
+  :global(.work-preview__image--incoming[hidden]) {
+    display: none;
+  }
+
+  .work-preview__link {
+    align-self: flex-end;
+    margin-top: clamp(0.85rem, 2vh, 1.15rem);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0;
+    border: none;
+    font-size: clamp(0.875rem, 1.5vw, 1.0625rem);
+    letter-spacing: -0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-ink);
+    background: transparent;
+  }
+
+  .work-preview__link-icon {
+    flex-shrink: 0;
+  }
+
+</style>
+
+<script>
+  import { setupPageScroll } from "../lib/scroll/setupPageScroll";
+  import { scrollToWorkProject } from "../lib/scroll/workChapter";
+
+  const section = document.querySelector<HTMLElement>("[data-work-section]");
+  const trackEl = section?.querySelector<HTMLElement>("[data-work-tour-track]");
+  const stageEl = section?.querySelector<HTMLElement>("[data-work-tour-stage]");
+  const items = [
+    ...section?.querySelectorAll<HTMLButtonElement>("[data-work-item]") ?? [],
+  ];
+  const previewImage = section?.querySelector<HTMLImageElement>("[data-work-preview-image]");
+  const previewFrame = section?.querySelector<HTMLElement>("[data-work-preview-frame]");
+  const openLink = section?.querySelector<HTMLAnchorElement>("[data-work-preview-link]");
+  const previewPanel = section?.querySelector<HTMLElement>("[data-work-preview]");
+
+  let disposePageScroll: (() => void) | undefined;
+
+  items.forEach((item, index) => {
+    item.addEventListener("click", () => {
+      scrollToWorkProject(index, items);
+    });
+  });
+
+  if (
+    section &&
+    trackEl &&
+    stageEl &&
+    previewImage &&
+    previewFrame &&
+    openLink &&
+    previewPanel &&
+    items.length > 0
+  ) {
+    disposePageScroll = setupPageScroll({
+      section,
+      trackEl,
+      stageEl,
+      items,
+      previewPanel,
+      previewFrame,
+      previewImage,
+      openLink,
+    });
+  }
+
+  document.addEventListener("astro:beforeunload", () => {
+    disposePageScroll?.();
+  });
+</script>
