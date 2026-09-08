@@ -52,6 +52,24 @@
     will-change: transform;
   }
 
+  .contact-scene.is-contact-static {
+    background-image: url("/contact-def.png");
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    will-change: auto;
+  }
+
+  .contact-scene.is-contact-static .contact-scene__canvas {
+    display: none;
+  }
+
+  @media (max-width: 767px) {
+    .contact-scene {
+      margin-top: 0;
+    }
+  }
+
   .contact-scene__canvas {
     position: absolute;
     inset: 0;

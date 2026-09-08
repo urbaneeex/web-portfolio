@@ -203,16 +203,23 @@ export class Grid {
 
     if (this.gridProperties.gridType === 1 && this.gridProperties.image) {
       const textureLoader = new THREE.TextureLoader();
-      textureLoader.load(this.gridProperties.image, (texture) => {
-        texture.colorSpace = THREE.SRGBColorSpace;
-        material.uniforms.uTexture.value = texture;
-        const img = texture.image as HTMLImageElement | { width: number; height: number };
-        if (img?.width && img?.height) {
-          material.uniforms.uTextureAspect.value = img.width / img.height;
-        }
-        material.needsUpdate = true;
-        this.gridProperties.onImageLoad?.();
-      });
+      textureLoader.load(
+        this.gridProperties.image,
+        (texture) => {
+          texture.colorSpace = THREE.SRGBColorSpace;
+          material.uniforms.uTexture.value = texture;
+          const img = texture.image as HTMLImageElement | { width: number; height: number };
+          if (img?.width && img?.height) {
+            material.uniforms.uTextureAspect.value = img.width / img.height;
+          }
+          material.needsUpdate = true;
+          this.gridProperties.onImageLoad?.();
+        },
+        undefined,
+        () => {
+          this.gridProperties.onImageLoad?.();
+        },
+      );
     }
 
     const mesh = new THREE.InstancedMesh(

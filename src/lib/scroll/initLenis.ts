@@ -2,6 +2,7 @@ import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { isMobileViewport } from "../device";
 import { LENIS_SCROLL } from "./scrollConfig";
 
 let lenis: Lenis | null = null;
@@ -9,7 +10,7 @@ let tickerFn: ((time: number) => void) | null = null;
 
 export function initLenis() {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduceMotion || lenis) return lenis;
+  if (reduceMotion || lenis || isMobileViewport()) return lenis;
 
   gsap.registerPlugin(ScrollTrigger);
 

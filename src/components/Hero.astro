@@ -190,6 +190,10 @@
   }
 
   @media (max-width: 768px) {
+    .hero-scene {
+      -webkit-overflow-scrolling: touch;
+    }
+
     .hero-intro__br-mobile {
       display: block;
     }
@@ -216,6 +220,7 @@
   import { gsap } from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   import { initDitherGrid } from "../lib/dither-grid/initDitherGrid";
+  import { isMobileViewport, MOBILE_HERO_DITHER_GRID } from "../lib/device";
   import { scrollRiseFromBottom } from "../lib/animations/riseReveal";
   import { revealBlurStaggerProgress } from "../lib/animations/revealBlur";
   import { lenisScrollToY } from "../lib/scroll/initLenis";
@@ -235,6 +240,10 @@
   const introCopyEl = document.querySelector<HTMLElement>("[data-hero-intro-copy]");
   const introPhotoEl = document.querySelector<HTMLElement>("[data-hero-intro-photo]");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const mobile = isMobileViewport();
+
+  const HERO_PIN_END = mobile ? "+=120%" : HERO_SCROLL.pinEnd;
+  const HERO_SCRUB = mobile ? 0.65 : HERO_SCROLL.scrub;
 
   const nameEl = document.querySelector<HTMLElement>("[data-hero-name]");
   const firstName = nameEl?.dataset.first ?? "";
@@ -582,11 +591,12 @@
       id: HERO_SCROLL_ID,
       trigger: section,
       start: "top top",
-      end: HERO_SCROLL.pinEnd,
+      end: HERO_PIN_END,
       pin: true,
       pinSpacing: true,
-      scrub: HERO_SCROLL.scrub,
-      anticipatePin: 1,
+      pinType: mobile ? "transform" : "fixed",
+      scrub: HERO_SCRUB,
+      anticipatePin: mobile ? 0 : 1,
       invalidateOnRefresh: true,
       onUpdate: (self) => updateFromScroll(self.progress),
       onLeave: () => {
@@ -613,16 +623,24 @@
     const controller = initDitherGrid({
       canvas,
       onAnimationComplete: runTypewriter,
+      gridColumns: mobile ? MOBILE_HERO_DITHER_GRID : 400,
+      gridRows: mobile ? MOBILE_HERO_DITHER_GRID : 400,
     });
 
-    window.addEventListener(
-      "dither-animation-complete",
-      () => {
-        ScrollTrigger.refresh();
-        setupHeroScroll(controller.setScrollZoom);
-      },
-      { once: true },
-    );
+    let heroScrollStarted = false;
+
+    const startHeroScroll = () => {
+      if (heroScrollStarted) return;
+      heroScrollStarted = true;
+      ScrollTrigger.refresh();
+      setupHeroScroll(controller.setScrollZoom);
+    };
+
+    window.addEventListener("dither-animation-complete", startHeroScroll, {
+      once: true,
+    });
+
+    window.setTimeout(startHeroScroll, mobile ? 1800 : 3500);
 
     document.addEventListener("astro:beforeunload", () => {
       if (onIntroResize) window.removeEventListener("resize", onIntroResize);

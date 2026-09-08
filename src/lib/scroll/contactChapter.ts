@@ -1,5 +1,6 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { isMobileViewport } from "../device";
 import { initDitherGrid } from "../dither-grid/initDitherGrid";
 import { CONTACT_SCROLL } from "./scrollConfig";
 
@@ -17,8 +18,18 @@ export function setupContactChapter({ section, canvas }: ContactChapterOptions) 
   const reduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
+  const mobile = isMobileViewport();
 
   section.classList.add("is-contact-active");
+
+  if (mobile) {
+    section.classList.add("is-contact-static");
+    gsap.set(section, { y: 0, clearProps: "transform" });
+    return () => {
+      gsap.set(section, { clearProps: "transform" });
+      section.classList.remove("is-contact-active", "is-contact-static");
+    };
+  }
 
   let riseTween: gsap.core.Tween | null = null;
 

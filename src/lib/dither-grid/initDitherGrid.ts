@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { createTimeline, animate } from "animejs";
+import { isMobileViewport, MOBILE_DITHER_PIXEL_RATIO } from "../device";
 import { Grid } from "./Grid";
 
 export type DitherGridOptions = {
@@ -47,7 +48,23 @@ export function initDitherGrid(options: DitherGridOptions) {
   cameraAnchor.add(camera);
   scene.add(cameraAnchor);
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  let renderer: THREE.WebGLRenderer;
+  try {
+    renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: !isMobileViewport(),
+      powerPreference: isMobileViewport() ? "low-power" : "high-performance",
+    });
+  } catch {
+    canvas.classList.add("is-ready");
+    onAnimationComplete?.();
+    window.dispatchEvent(new CustomEvent("dither-animation-complete"));
+    return {
+      setScrollZoom: () => {},
+      setScrollZoomIn: () => {},
+      dispose: () => {},
+    };
+  }
 
   const FINAL_ZOOM = 0.9;
   const INITIAL_ZOOM = 70;
@@ -158,14 +175,24 @@ export function initDitherGrid(options: DitherGridOptions) {
     bottom: cy - half / viewAspect,
   });
 
-  /** half tal que la altura visible = contentH·zoom (prioridad altura, no ancho) */
-  const portraitHalfForHeight = (contentH: number, zoom: number) =>
-    (contentH * zoom * viewAspect) / 2;
-
-  /** Retrato: fracción del ensanche total (1/viewAspect) */
-  const PORTRAIT_WIDTH_STRETCH = 0.6;
-  /** Retrato: desplaza la vista un poco a la izq. → la imagen se ve más a la derecha */
-  const PORTRAIT_PAN_X = 0.02;
+  const applyCoverFrustum = (
+    cx: number,
+    cy: number,
+    contentW: number,
+    contentH: number,
+    zoom: number,
+  ) => {
+    const coverW = Math.max(contentW, contentH * viewAspect);
+    const coverH = coverW / viewAspect;
+    const endHalfW = (coverW * zoom) / 2;
+    const endHalfH = (coverH * zoom) / 2;
+    return {
+      left: cx - endHalfW,
+      right: cx + endHalfW,
+      top: cy + endHalfH,
+      bottom: cy - endHalfH,
+    };
+  };
 
   const applyFrustumFitAspectPreserve = (fitBlend: number) => {
     imageGrid.group.scale.set(1, 1, 1);
@@ -216,15 +243,11 @@ export function initDitherGrid(options: DitherGridOptions) {
     }
 
     const scaleX =
-      viewAspect >= 1
-        ? lerp(1, viewAspect, fitBlend)
-        : lerp(1, 1 + (1 / viewAspect - 1) * PORTRAIT_WIDTH_STRETCH, fitBlend);
+      viewAspect >= 1 ? lerp(1, viewAspect, fitBlend) : 1;
     imageGrid.group.scale.set(scaleX, 1, 1);
 
     const { cx, cy, contentW, contentH } = getContentBoundsInCameraSpace();
     const zoom = Math.max(camera.zoom, 0.001);
-    const frameCx =
-      viewAspect < 1 ? cx - contentW * PORTRAIT_PAN_X * fitBlend : cx;
 
     const contain = getContainFrustum(viewAspect);
     const containHalfW = (contain.right - contain.left) / 2;
@@ -238,7 +261,7 @@ export function initDitherGrid(options: DitherGridOptions) {
     if (viewAspect < 1) {
       const startHalf = Math.max(contentW, contentH) / 2;
       ({ left: startLeft, right: startRight, top: startTop, bottom: startBottom } =
-        portraitFrustum(startHalf, frameCx, cy));
+        portraitFrustum(startHalf, cx, cy));
     } else {
       startLeft = cx - containHalfW;
       startRight = cx + containHalfW;
@@ -246,26 +269,12 @@ export function initDitherGrid(options: DitherGridOptions) {
       startBottom = cy - containHalfH;
     }
 
-    let endLeft: number;
-    let endRight: number;
-    let endTop: number;
-    let endBottom: number;
-
-    if (viewAspect < 1) {
-      const endHalf = portraitHalfForHeight(contentH, zoom);
-      ({ left: endLeft, right: endRight, top: endTop, bottom: endBottom } =
-        portraitFrustum(endHalf, frameCx, cy));
-    } else {
-      /* PC: sin cambios — cover por ancho */
-      const coverW = Math.max(contentW, contentH * viewAspect);
-      const coverH = coverW / viewAspect;
-      const endHalfW = (coverW * zoom) / 2;
-      const endHalfH = (coverH * zoom) / 2;
-      endLeft = cx - endHalfW;
-      endRight = cx + endHalfW;
-      endTop = cy + endHalfH;
-      endBottom = cy - endHalfH;
-    }
+    const {
+      left: endLeft,
+      right: endRight,
+      top: endTop,
+      bottom: endBottom,
+    } = applyCoverFrustum(cx, cy, contentW, contentH, zoom);
 
     camera.left = lerp(startLeft, endLeft, fitBlend);
     camera.right = lerp(startRight, endRight, fitBlend);
@@ -389,7 +398,9 @@ export function initDitherGrid(options: DitherGridOptions) {
   const resize = (width: number, height: number, pixelRatio: number) => {
     viewAspect = width / height;
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(pixelRatio, 2));
+    renderer.setPixelRatio(
+      Math.min(pixelRatio, isMobileViewport() ? MOBILE_DITHER_PIXEL_RATIO : 2),
+    );
     if (textureReady && !isPlaying) applyVisualProgress(savedProgress, false);
   };
 

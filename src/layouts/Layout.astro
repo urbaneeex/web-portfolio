@@ -41,7 +41,17 @@ const {
     >
     <slot />
     <script>
+      import { gsap } from "gsap";
+      import { ScrollTrigger } from "gsap/ScrollTrigger";
+      import { isMobileViewport } from "../lib/device";
       import { destroyLenis, initLenis } from "../lib/scroll/initLenis";
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      if (isMobileViewport()) {
+        ScrollTrigger.config({ ignoreMobileResize: true });
+        ScrollTrigger.normalizeScroll(true);
+      }
 
       initLenis();
 
