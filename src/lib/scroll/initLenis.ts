@@ -3,7 +3,7 @@ import "lenis/dist/lenis.css";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { isMobileViewport } from "../device";
-import { LENIS_SCROLL } from "./scrollConfig";
+import { LENIS_SCROLL, MOBILE_SCROLL } from "./scrollConfig";
 
 let lenis: Lenis | null = null;
 let tickerFn: ((time: number) => void) | null = null;
@@ -39,6 +39,16 @@ export function initLenis() {
 
 export function getLenis() {
   return lenis;
+}
+
+/** Misma config al arrancar y al reabrir el scroll tras cerrar el menú. */
+export function enableMobileScrollNormalizer() {
+  if (!isMobileViewport()) return;
+  ScrollTrigger.normalizeScroll({
+    allowNestedScroll: true,
+    wheelSpeed: MOBILE_SCROLL.wheelSpeed,
+    momentum: MOBILE_SCROLL.momentum,
+  });
 }
 
 export type LenisScrollToOptions = {

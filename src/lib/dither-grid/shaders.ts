@@ -44,6 +44,7 @@ export const vertexShader = `
   uniform sampler2D uTexture;
   uniform float uTextureAspect;
   uniform float uGridAspect;
+  uniform float uAspectCover;
 
   uniform vec2  uMouse;
   uniform float uMouseRadius;
@@ -63,10 +64,12 @@ export const vertexShader = `
     vec2 uv = st;
     if (srcAspect > dstAspect) {
       float scale = dstAspect / srcAspect;
-      uv.x = (uv.x - 0.5) / scale + 0.5;
+      float fit = uAspectCover > 0.5 ? scale : 1.0 / scale;
+      uv.x = (uv.x - 0.5) * fit + 0.5;
     } else {
       float scale = srcAspect / dstAspect;
-      uv.y = (uv.y - 0.5) / scale + 0.5;
+      float fit = uAspectCover > 0.5 ? scale : 1.0 / scale;
+      uv.y = (uv.y - 0.5) * fit + 0.5;
     }
     return uv;
   }

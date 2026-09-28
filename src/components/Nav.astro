@@ -173,6 +173,14 @@ import { nav, site, menuSocials } from "../data/site";
   }
 
   @media (max-width: 767px) {
+    .nav-bar {
+      flex-direction: row-reverse;
+    }
+
+    .nav-bar__brand {
+      text-align: right;
+    }
+
     .nav-toggle {
       display: flex;
       align-items: center;
@@ -334,9 +342,13 @@ import { nav, site, menuSocials } from "../data/site";
 </style>
 
 <script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
   import { setupScrollNavLinks } from "../lib/scroll/navScroll";
-  import { getLenis } from "../lib/scroll/initLenis";
+  import { enableMobileScrollNormalizer, getLenis } from "../lib/scroll/initLenis";
   import { SCROLL_EVENTS } from "../lib/scroll/scrollConfig";
+
+  gsap.registerPlugin(ScrollTrigger);
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const MOBILE_NAV_MQ = window.matchMedia("(max-width: 767px)");
@@ -392,28 +404,36 @@ import { nav, site, menuSocials } from "../data/site";
   const menuEl = document.querySelector<HTMLElement>("[data-nav-menu]");
   const heroSection = document.getElementById("hero-scene");
   const contactSection = document.querySelector<HTMLElement>("[data-contact-section]");
+  let menuScrollY = 0;
 
   const setMenuOpen = (open: boolean) => {
     if (!navEl || !toggleBtn || !menuEl) return;
+    if (navEl.classList.contains("is-menu-open") === open) return;
 
     navEl.classList.toggle("is-menu-open", open);
     toggleBtn.setAttribute("aria-expanded", String(open));
     toggleBtn.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
     menuEl.setAttribute("aria-hidden", String(!open));
-    document.documentElement.classList.toggle("nav-menu-open", open);
 
     const lenis = getLenis();
     if (open) {
+      menuScrollY = window.scrollY || document.documentElement.scrollTop || 0;
       lenis?.stop();
-    } else {
-      lenis?.start();
+      ScrollTrigger.normalizeScroll(false);
+      document.documentElement.classList.add("nav-menu-open");
+      document.body.style.top = `-${menuScrollY}px`;
+      return;
     }
+
+    document.documentElement.classList.remove("nav-menu-open");
+    document.body.style.top = "";
+    window.scrollTo(0, menuScrollY);
+    lenis?.start();
+    if (MOBILE_NAV_MQ.matches) enableMobileScrollNormalizer();
   };
 
   const blockBackgroundScroll = (event: Event) => {
     if (!navEl?.classList.contains("is-menu-open")) return;
-    const target = event.target as Node | null;
-    if (menuEl?.contains(target)) return;
     event.preventDefault();
   };
 
@@ -425,7 +445,7 @@ import { nav, site, menuSocials } from "../data/site";
   });
 
   menuEl?.querySelectorAll<HTMLAnchorElement>("a").forEach((link) => {
-    link.addEventListener("click", () => setMenuOpen(false));
+    link.addEventListener("click", () => setMenuOpen(false), { capture: true });
   });
 
   document.addEventListener("keydown", (event) => {

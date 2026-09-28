@@ -194,6 +194,10 @@
   }
 
   html.nav-menu-open body {
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
     overflow: hidden;
     overscroll-behavior: none;
     touch-action: none;

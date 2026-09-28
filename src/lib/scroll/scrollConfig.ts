@@ -1,3 +1,13 @@
+/**
+ * Scroll nativo del viewport móvil (sin Lenis).
+ * La rueda a 1 va el doble de rápido que escritorio (Lenis 0.48).
+ * La inercia por defecto de GSAP dura 2.8s y se come secciones enteras.
+ */
+export const MOBILE_SCROLL = {
+  wheelSpeed: 0.46,
+  momentum: 1.35,
+} as const;
+
 /** Lenis — scroll suave global (más bajo lerp / wheel = más lento). */
 export const LENIS_SCROLL = {
   lerp: 0.042,

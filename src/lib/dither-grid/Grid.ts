@@ -188,6 +188,7 @@ export class Grid {
         uGridOffsetEnd: { value: 0 },
         uTexture: { value: null },
         uTextureAspect: { value: 1 },
+        uAspectCover: { value: 0 },
         uGridAspect: {
           value:
             (this.gridProperties.columns ?? 1) /

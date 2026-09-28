@@ -242,8 +242,8 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const mobile = isMobileViewport();
 
-  const HERO_PIN_END = mobile ? "+=120%" : HERO_SCROLL.pinEnd;
-  const HERO_SCRUB = mobile ? 0.65 : HERO_SCROLL.scrub;
+  const HERO_PIN_END = mobile ? "+=155%" : HERO_SCROLL.pinEnd;
+  const HERO_SCRUB = mobile ? 1 : HERO_SCROLL.scrub;
 
   const nameEl = document.querySelector<HTMLElement>("[data-hero-name]");
   const firstName = nameEl?.dataset.first ?? "";

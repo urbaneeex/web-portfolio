@@ -167,13 +167,54 @@ export function initDitherGrid(options: DitherGridOptions) {
     };
   };
 
-  /** Móvil: frustum con aspecto de pantalla; `half` define la altura visible (2·half/viewAspect) */
-  const portraitFrustum = (half: number, cx: number, cy: number) => ({
-    left: cx - half,
-    right: cx + half,
-    top: cy + half / viewAspect,
-    bottom: cy - half / viewAspect,
-  });
+  /**
+   * Punto de la foto que cae en el centro de la pantalla.
+   * Más alto = el retrato se desplaza a la izquierda (la cara se separa del borde).
+   */
+  const PORTRAIT_CENTER_X = 0.47;
+  /** >1 aleja la cámara. 1 llena la altura. */
+  const PORTRAIT_ZOOM_OUT = 1.32;
+  /** Fracción de pantalla sobre la foto. 1 - 1/zoom pega el borde inferior a la pantalla. */
+  const PORTRAIT_TOP_INSET = 1 - 1 / PORTRAIT_ZOOM_OUT;
+
+  const uvGridAspect = gridColumns / Math.max(gridRows, 1);
+
+  /**
+   * Reposo en vertical: proporción real, torso a ras del borde inferior,
+   * cara con aire a la derecha.
+   */
+  const portraitRestFrame = (
+    cx: number,
+    cy: number,
+    contentW: number,
+    contentH: number,
+    zoom: number,
+  ) => {
+    const texAspect = Math.max(
+      imageGrid.material.uniforms.uTextureAspect.value || 1,
+      0.001,
+    );
+    const cropW = Math.min(1, uvGridAspect / texAspect);
+    const cropX0 = (1 - cropW) / 2;
+    const stCenter = (PORTRAIT_CENTER_X - cropX0) / cropW;
+
+    const visibleH = contentH * PORTRAIT_ZOOM_OUT;
+    const visibleW = visibleH * Math.max(viewAspect, 0.001);
+    const focusX = cx + (stCenter - 0.5) * contentW;
+    const imageTop = cy + contentH / 2;
+    const focusY = imageTop + PORTRAIT_TOP_INSET * visibleH - visibleH / 2;
+    const halfW = (visibleW * zoom) / 2;
+    const halfH = (visibleH * zoom) / 2;
+
+    return {
+      focusX,
+      focusY,
+      left: focusX - halfW,
+      right: focusX + halfW,
+      top: focusY + halfH,
+      bottom: focusY - halfH,
+    };
+  };
 
   const applyCoverFrustum = (
     cx: number,
@@ -238,9 +279,13 @@ export function initDitherGrid(options: DitherGridOptions) {
 
   const applyFrustumFit = (fitBlend: number) => {
     if (preserveImageAspect) {
+      imageGrid.material.uniforms.uAspectCover.value = 0;
       applyFrustumFitAspectPreserve(fitBlend);
       return;
     }
+
+    // En vertical, recortar la foto sin estirarla. En horizontal se conserva el encuadre de escritorio.
+    imageGrid.material.uniforms.uAspectCover.value = viewAspect < 1 ? 1 : 0;
 
     const scaleX =
       viewAspect >= 1 ? lerp(1, viewAspect, fitBlend) : 1;
@@ -258,23 +303,27 @@ export function initDitherGrid(options: DitherGridOptions) {
     let startTop: number;
     let startBottom: number;
 
+    let endLeft: number;
+    let endRight: number;
+    let endTop: number;
+    let endBottom: number;
+
     if (viewAspect < 1) {
+      const rest = portraitRestFrame(cx, cy, contentW, contentH, zoom);
       const startHalf = Math.max(contentW, contentH) / 2;
-      ({ left: startLeft, right: startRight, top: startTop, bottom: startBottom } =
-        portraitFrustum(startHalf, cx, cy));
+      startLeft = rest.focusX - startHalf;
+      startRight = rest.focusX + startHalf;
+      startTop = rest.focusY + startHalf / viewAspect;
+      startBottom = rest.focusY - startHalf / viewAspect;
+      ({ left: endLeft, right: endRight, top: endTop, bottom: endBottom } = rest);
     } else {
       startLeft = cx - containHalfW;
       startRight = cx + containHalfW;
       startTop = cy + containHalfH;
       startBottom = cy - containHalfH;
+      ({ left: endLeft, right: endRight, top: endTop, bottom: endBottom } =
+        applyCoverFrustum(cx, cy, contentW, contentH, zoom));
     }
-
-    const {
-      left: endLeft,
-      right: endRight,
-      top: endTop,
-      bottom: endBottom,
-    } = applyCoverFrustum(cx, cy, contentW, contentH, zoom);
 
     camera.left = lerp(startLeft, endLeft, fitBlend);
     camera.right = lerp(startRight, endRight, fitBlend);
