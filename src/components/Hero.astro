@@ -224,7 +224,7 @@
   import { scrollRiseFromBottom } from "../lib/animations/riseReveal";
   import { revealBlurStaggerProgress } from "../lib/animations/revealBlur";
   import { lenisScrollToY } from "../lib/scroll/initLenis";
-  import { HERO_SCROLL, SCROLL_EVENTS } from "../lib/scroll/scrollConfig";
+  import { HERO_SCROLL, MOBILE_SCROLL, SCROLL_EVENTS } from "../lib/scroll/scrollConfig";
   import {
     HERO_SCROLL_ID,
     scrollYForTriggerProgress,
@@ -242,7 +242,9 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const mobile = isMobileViewport();
 
-  const HERO_PIN_END = mobile ? "+=155%" : HERO_SCROLL.pinEnd;
+  const HERO_PIN_END = mobile
+    ? `+=${Math.round(155 * MOBILE_SCROLL.distance)}%`
+    : HERO_SCROLL.pinEnd;
   const HERO_SCRUB = mobile ? 1 : HERO_SCROLL.scrub;
 
   const nameEl = document.querySelector<HTMLElement>("[data-hero-name]");

@@ -7,6 +7,7 @@ import { LENIS_SCROLL, MOBILE_SCROLL } from "./scrollConfig";
 
 let lenis: Lenis | null = null;
 let tickerFn: ((time: number) => void) | null = null;
+let scrollTween: gsap.core.Tween | null = null;
 
 export function initLenis() {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -21,7 +22,7 @@ export function initLenis() {
     wheelMultiplier: LENIS_SCROLL.wheelMultiplier,
     touchMultiplier: LENIS_SCROLL.touchMultiplier,
     syncTouch: false,
-    anchors: true,
+    anchors: false,
   });
 
   lenis.on("scroll", ScrollTrigger.update);
@@ -54,13 +55,13 @@ export function enableMobileScrollNormalizer() {
 export type LenisScrollToOptions = {
   duration?: number;
   immediate?: boolean;
+  lock?: boolean;
   onComplete?: () => void;
 };
 
 /** Scroll suave a una posición Y — sincronizado con ScrollTrigger vía Lenis. */
 export function lenisScrollToY(targetY: number, options: LenisScrollToOptions = {}) {
-  const { duration = LENIS_SCROLL.scrollToDuration, immediate = false, onComplete } = options;
-  const easing = (t: number) => 1 - Math.pow(1 - t, 3);
+  const { duration = LENIS_SCROLL.scrollToDuration, immediate = false, lock = true, onComplete } = options;
 
   if (!lenis) {
     window.scrollTo({ top: targetY, behavior: immediate ? "auto" : "smooth" });
@@ -68,23 +69,32 @@ export function lenisScrollToY(targetY: number, options: LenisScrollToOptions = 
     return;
   }
 
+  scrollTween?.kill();
   const currentY = lenis.scroll;
   if (immediate || Math.abs(currentY - targetY) < 2) {
-    lenis.scrollTo(targetY, { immediate: true, lock: false });
+    lenis.scrollTo(targetY, { immediate: true, force: true, lock: false });
     onComplete?.();
     return;
   }
 
-  lenis.scrollTo(targetY, {
+  const state = { y: currentY };
+  scrollTween = gsap.to(state, {
+    y: targetY,
     duration,
-    immediate: false,
-    lock: true,
-    easing,
-    onComplete,
+    ease: "power3.out",
+    onUpdate: () => {
+      lenis?.scrollTo(state.y, { immediate: true, force: true, lock });
+    },
+    onComplete: () => {
+      scrollTween = null;
+      onComplete?.();
+    },
   });
 }
 
 export function destroyLenis() {
+  scrollTween?.kill();
+  scrollTween = null;
   if (tickerFn) {
     gsap.ticker.remove(tickerFn);
     tickerFn = null;

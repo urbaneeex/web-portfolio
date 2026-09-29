@@ -49,7 +49,7 @@
 
   /* Palette — hero/intro/work negro puro; resto navy */
   --color-hero-black: #000000;
-  --color-paper: #070a12;
+  --color-paper: #000000;
   --color-surface: #0f1524;
   --color-surface-2: #161d30;
   --color-ink: #eef1f8;
@@ -76,6 +76,7 @@
     scroll-behavior: auto;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    background-color: #000;
   }
 
   html.hero-scroll-active {
@@ -83,7 +84,13 @@
   }
 
   body {
-    background-color: var(--color-paper);
+    background-color: #000;
+    background-image:
+      radial-gradient(rgba(255, 255, 255, 0.22) 0.6px, transparent 0.7px),
+      linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 12px 12px, 72px 72px, 72px 72px;
+    background-attachment: fixed;
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-feature-settings: "ss01", "cv01";
@@ -117,6 +124,44 @@
   /* Shared horizontal inset — nav, hero, sections */
   .page-x {
     padding-inline: var(--page-x);
+  }
+
+  .chapter-mark {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    margin: 0;
+    font-family: var(--font-pixel);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .chapter-mark__index {
+    color: #fff;
+  }
+
+  .chapter-title {
+    margin: 0;
+    font-family: var(--font-zirena);
+    font-weight: 500;
+    font-size: clamp(2.35rem, 5.4vw, 4.6rem);
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  .chapter-copy {
+    margin: 0;
+    max-width: 36rem;
+    font-family: var(--font-sans);
+    font-size: clamp(0.98rem, 1.25vw, 1.125rem);
+    font-weight: 400;
+    line-height: 1.65;
+    letter-spacing: -0.011em;
+    color: rgba(255, 255, 255, 0.62);
   }
 
   /* Tipografía lead About — compartida Hero + Contact */
@@ -174,18 +219,20 @@
   #site-nav {
     background: transparent;
     pointer-events: none;
+    mix-blend-mode: difference;
+    color: #fff;
+  }
+
+  #site-nav.is-menu-open {
+    mix-blend-mode: normal;
+    color: #fff;
   }
 
   #site-nav nav {
-    mix-blend-mode: difference;
-    color: #fff;
+    position: relative;
+    z-index: 1;
+    color: inherit;
     pointer-events: auto;
-  }
-
-  /* Contact: fondo blanco rompe el blend — texto oscuro fijo */
-  #site-nav.nav--on-light nav {
-    mix-blend-mode: normal;
-    color: #0a0a0a;
   }
 
   html.nav-menu-open {
@@ -303,14 +350,14 @@
   }
 
   main {
-    background-color: var(--color-hero-black);
+    background-color: transparent;
   }
 
   .chapter-hero-work {
     display: flex;
     flex-direction: column;
     gap: 0;
-    background-color: var(--color-hero-black);
+    background-color: transparent;
     color: var(--color-ink);
   }
 
@@ -320,13 +367,9 @@
   }
 
   .pin-spacer {
-    background-color: var(--color-hero-black);
+    background-color: transparent;
     border: none;
     box-shadow: none;
-  }
-
-  .pin-spacer:has(> .contact-scene) {
-    background-color: #ffffff;
   }
 }
 

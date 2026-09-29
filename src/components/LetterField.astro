@@ -1,0 +1,187 @@
+<div class="letter-field" data-letter-field aria-hidden="true"></div>
+
+<style>
+  .letter-field {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 12px);
+    grid-template-rows: repeat(var(--rows), 12px);
+    pointer-events: none;
+  }
+
+  :global(.letter-field span) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-pixel);
+    width: 12px;
+    height: 12px;
+    overflow: hidden;
+    font-size: 10px;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.78);
+    opacity: 0;
+  }
+
+  :global(.letter-field span.is-on) {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  const host = document.querySelector<HTMLElement>("[data-letter-field]");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (host) {
+    const letters = ["a", "r", "k", "a", "p", "p", "@", "*", "2", "9"];
+    const cell = 12;
+    const cols = Math.ceil(window.innerWidth / cell);
+    const rowsN = Math.ceil(window.innerHeight / cell);
+    host.style.setProperty("--cols", String(cols));
+    host.style.setProperty("--rows", String(rowsN));
+    const cells: HTMLSpanElement[] = [];
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < cols * rowsN; i += 1) {
+      const span = document.createElement("span");
+      fragment.appendChild(span);
+      cells.push(span);
+    }
+    host.appendChild(fragment);
+
+    const hash = (col: number, row: number, seed: number) => {
+      const n = Math.sin(col * 12.9898 + row * 78.233 + seed * 45.164) * 43758.5453;
+      return n - Math.floor(n);
+    };
+
+    const field = (x: number, y: number, seed: number) => {
+      const x0 = Math.floor(x);
+      const y0 = Math.floor(y);
+      const fx = x - x0;
+      const fy = y - y0;
+      const sx = fx * fx * (3 - 2 * fx);
+      const sy = fy * fy * (3 - 2 * fy);
+      const a = hash(x0, y0, seed);
+      const b = hash(x0 + 1, y0, seed);
+      const c = hash(x0, y0 + 1, seed);
+      const d = hash(x0 + 1, y0 + 1, seed);
+      return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+    };
+
+    const onFigure = (col: number, row: number) => {
+      const x = col / (cols - 1) - 0.5;
+      const y = row / (rowsN - 1);
+      const wx = x + (field(col * 0.045, row * 0.04, 11) - 0.5) * 0.055;
+      const wy = y + (field(col * 0.04, row * 0.05, 19) - 0.5) * 0.04;
+      const head = Math.hypot(wx / 0.095, (wy - 0.28) / 0.13);
+      const torso = Math.hypot(wx / 0.18, (wy - 0.64) / 0.38);
+      const dist = Math.min(head, torso);
+      if (dist > 1.18) return false;
+      if (dist < 0.96) return true;
+      const rim = (dist - 0.96) / 0.22;
+      return field(col * 0.22, row * 0.18, 6) > rim;
+    };
+
+    const portraitOnScreen = () =>
+      [...document.querySelectorAll<HTMLElement>("[data-name-reel], [data-contact-section]")].some(
+        (el) => {
+          const rect = el.getBoundingClientRect();
+          return rect.top < window.innerHeight * 0.4 && rect.bottom > window.innerHeight * 0.6;
+        },
+      );
+
+    type Block = { cx: number; cy: number; rx: number; ry: number; seed: number; ang: number };
+    const blocks: Block[] = [];
+
+    const randomBlock = (): Block => {
+      const edge = Math.floor(Math.random() * 4);
+      const cx =
+        edge === 0 ? 4 + Math.random() * cols * 0.22
+        : edge === 1 ? cols - 5 - Math.random() * cols * 0.22
+        : 2 + Math.random() * (cols - 4);
+      const cy =
+        edge === 2 ? 3 + Math.random() * rowsN * 0.2
+        : edge === 3 ? rowsN - 4 - Math.random() * rowsN * 0.18
+        : 2 + Math.random() * (rowsN - 4);
+      return {
+        cx,
+        cy,
+        rx: 11 + Math.random() * 10,
+        ry: 8 + Math.random() * 10,
+        seed: Math.random() * 100,
+        ang: Math.random() * Math.PI,
+      };
+    };
+
+    const inBlock = (col: number, row: number, block: Block) => {
+      const ca = Math.cos(block.ang);
+      const sa = Math.sin(block.ang);
+      const lx = col - block.cx;
+      const ly = row - block.cy;
+      const px = (lx * ca + ly * sa) / block.rx;
+      const py = (-lx * sa + ly * ca) / block.ry;
+      const qx = px + (field(col * 0.09, row * 0.08, block.seed) - 0.5) * 0.65;
+      const qy = py + (field(col * 0.08 + 1.7, row * 0.1, block.seed + 5) - 0.5) * 0.65;
+      const dist = Math.sqrt(qx * qx + qy * qy);
+      if (dist > 1.28) return false;
+      const t = Math.min(1, Math.max(0, 1 - dist / 1.2));
+      const grain = field(col * 0.26, row * 0.22, block.seed + 2);
+      return grain < 0.12 + t * t * 0.72;
+    };
+
+    const paint = () => {
+      const maskFigure = portraitOnScreen();
+      for (let row = 0; row < rowsN; row += 1) {
+        for (let col = 0; col < cols; col += 1) {
+          const cell = cells[row * cols + col];
+          if (maskFigure && onFigure(col, row)) {
+            cell.classList.remove("is-on");
+            cell.textContent = "";
+            continue;
+          }
+          const hit = blocks.some((block) => inBlock(col, row, block));
+          cell.classList.toggle("is-on", hit);
+          if (hit && !cell.textContent) {
+            cell.textContent = letters[Math.floor(Math.random() * letters.length)] ?? "a";
+          }
+          if (!hit) cell.textContent = "";
+        }
+      }
+    };
+
+    const shuffle = () => {
+      for (const cell of cells) {
+        if (!cell.classList.contains("is-on") || !cell.textContent) continue;
+        if (Math.random() < 0.34) {
+          cell.textContent = letters[Math.floor(Math.random() * letters.length)] ?? "a";
+        }
+      }
+    };
+
+    for (let i = 0; i < 6; i += 1) blocks.push(randomBlock());
+    paint();
+
+    let masked = portraitOnScreen();
+    const onScroll = () => {
+      const next = portraitOnScreen();
+      if (next === masked) return;
+      masked = next;
+      paint();
+    };
+
+    if (!reduceMotion) {
+      const shuffleTimer = window.setInterval(shuffle, 72);
+      const moveTimer = window.setInterval(() => {
+        blocks[Math.floor(Math.random() * blocks.length)] = randomBlock();
+        paint();
+      }, 1600);
+      window.addEventListener("scroll", onScroll, { passive: true });
+      document.addEventListener("astro:beforeunload", () => {
+        window.clearInterval(shuffleTimer);
+        window.clearInterval(moveTimer);
+        window.removeEventListener("scroll", onScroll);
+      });
+    }
+  }
+</script>

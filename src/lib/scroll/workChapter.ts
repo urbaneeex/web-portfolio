@@ -1,7 +1,8 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { getLenis, lenisScrollToY } from "./initLenis";
-import { SCROLL_EVENTS, WORK_SCROLL } from "./scrollConfig";
+import { isMobileViewport } from "../device";
+import { MOBILE_SCROLL, SCROLL_EVENTS, WORK_SCROLL } from "./scrollConfig";
 import {
   getHeroScrollEnd,
   getHeroScrollTrigger,
@@ -29,18 +30,15 @@ export type WorkChapterOptions = {
 
 const tourScrollSpan = (projectCount: number) =>
   window.innerHeight *
-  (WORK_SCROLL.scrollPerProjectVh * Math.max(1, projectCount)) /
+  (WORK_SCROLL.scrollPerProjectVh *
+    (isMobileViewport() ? MOBILE_SCROLL.distance : 1) *
+    Math.max(1, projectCount)) /
   100;
 
 const mapProgress = (progress: number, start: number, end: number) => {
   if (progress <= start) return 0;
   if (progress >= end) return 1;
   return (progress - start) / Math.max(0.001, end - start);
-};
-
-const smoothstep = (t: number) => {
-  const c = Math.max(0, Math.min(1, t));
-  return c * c * (3 - 2 * c);
 };
 
 const tourProgressFromScroll = (scrollProgress: number) =>
@@ -187,52 +185,16 @@ export function setupWorkChapter({
     window.dispatchEvent(new CustomEvent(SCROLL_EVENTS.workReady));
   };
 
-  const hideWork = () => {
-    workRevealed = false;
-    setWorkVisibility(0, WORK_SCROLL.enterOffsetY, false);
-    section.classList.remove("is-work-ready", "is-work-entering");
-  };
-
   const updateHeroHandoff = (heroProgress: number) => {
     if (tourTrigger?.isActive) return;
 
-    if (handoffSuppressed) {
-      if (heroProgress < WORK_SCROLL.handoffHeroStart) {
-        handoffSuppressed = false;
-        hideWork();
-      }
-      return;
-    }
-
     const scrollY = getLenis()?.scroll ?? window.scrollY ?? 0;
     const heroEnd = getHeroScrollEnd();
-    if (heroEnd > 0 && scrollY >= heroEnd - 1) {
-      syncInitialPreview();
-      return;
-    }
+    const pastHero = heroEnd > 0 && scrollY >= heroEnd - 1;
+    if (!pastHero && heroProgress < 0.999) return;
 
-    const eased = smoothstep(
-      mapProgress(
-        heroProgress,
-        WORK_SCROLL.handoffHeroStart,
-        WORK_SCROLL.handoffHeroEnd,
-      ),
-    );
-
-    if (eased <= 0) {
-      if (!workRevealed) hideWork();
-      return;
-    }
-
-    setWorkVisibility(eased, WORK_SCROLL.enterOffsetY * (1 - eased), true);
-
-    if (eased > 0.04) {
-      syncInitialPreview();
-    }
-
-    if (eased >= 0.98) {
-      workRevealed = true;
-    }
+    if (!workRevealed) revealWork();
+    else syncInitialPreview();
   };
 
   const resetItem = (item: HTMLButtonElement) => {
@@ -573,8 +535,8 @@ export function setupWorkChapter({
     tourTrigger = ScrollTrigger.create({
       id: WORK_TOUR_SCROLL_ID,
       trigger: trackEl,
-      start: () => getHeroScrollEnd(),
-      end: () => getHeroScrollEnd() + tourScrollSpan(count),
+      start: "top top",
+      end: () => `+=${tourScrollSpan(count)}`,
       scrub: WORK_SCROLL.scrub,
       invalidateOnRefresh: true,
       onEnter: () => {
@@ -594,8 +556,7 @@ export function setupWorkChapter({
         lastPreviewIndex = -1;
         typewriterTween?.kill();
         typewriterTween = null;
-        hideWork();
-        previewReveal.resetHidden(previewImage, openLink);
+        ensureInitialProject();
       },
     });
 
@@ -603,7 +564,8 @@ export function setupWorkChapter({
       revealWork();
       handleTourUpdate(tourTrigger.progress);
     } else {
-      previewReveal.resetHidden(previewImage, openLink);
+      revealWork();
+      ensureInitialProject();
     }
   };
 

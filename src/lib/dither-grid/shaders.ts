@@ -39,6 +39,7 @@ export const vertexShader = `
   uniform float uRowSize;
   uniform float uColumnSize;
   uniform float uDitherProgress;
+  uniform float uClearBackground;
   uniform float uGridOffsetStart;
   uniform float uGridOffsetEnd;
   uniform sampler2D uTexture;
@@ -50,6 +51,13 @@ export const vertexShader = `
   uniform float uMouseRadius;
   uniform float uMouseStrength;
   uniform float uMouseActive;
+  uniform vec2  uWaveCenter;
+  uniform float uWaveTravel;
+  uniform float uWaveActive;
+  uniform sampler2D uContour;
+  uniform float uGlyphMode;
+  uniform float uGlyphCount;
+  uniform float uGlyphTime;
 
   attribute float aRow;
   attribute float aColumn;
@@ -57,6 +65,10 @@ export const vertexShader = `
 
   varying vec3 vColor;
   varying vec3 vNormal;
+  varying float vAlpha;
+  varying vec2 vCellUv;
+  varying float vGlyph;
+  varying float vGlyphOn;
 
   ${simplexNoise}
 
@@ -164,6 +176,23 @@ export const vertexShader = `
       }
     }
 
+    if (uWaveActive > 0.001) {
+      vec3 contour = texture2D(uContour, st).rgb;
+      float rim = contour.r;
+      vec2 n = contour.gb * 2.0 - 1.0;
+      if (rim > 0.04 && finalColor < 0.5 && dot(n, n) > 0.04) {
+        vec2 outward = normalize((modelMatrix * vec4(n, 0.0, 0.0)).xy);
+        vec2 tangent = vec2(-outward.y, outward.x);
+        float h = fract(sin(dot(vec2(aRow * 1.73, aColumn * 2.17), vec2(12.9898, 78.233))) * 43758.5453);
+        float n1 = snoise(vec2(aRow * 0.33, aColumn * 0.29) + vec2(uWaveTravel * 3.1, 1.7));
+        float n2 = snoise(vec2(aColumn * 0.27, aRow * 0.41) + 5.2);
+        float amp = rim * uWaveActive * (12.5 + n1 * 7.5);
+        vec2 chaos = vec2(n1, n2) * amp * 0.85;
+        repelOffset += outward * amp * (0.55 + 0.45 * n2) + tangent * amp * (h - 0.5) * 1.55 + chaos;
+        repelZ += amp * (0.08 + h * 0.1);
+      }
+    }
+
     vec4 cellLocalPosition = vec4(position, 1.0);
     vec4 cellPosition = modelMatrix * instanceMatrix * cellLocalPosition;
     cellPosition.z  += cellOffset;
@@ -175,17 +204,52 @@ export const vertexShader = `
     gl_Position = projectionMatrix * viewMatrix * cellPosition;
     vColor = vec3(finalColor);
     vNormal = normalize(modelNormal.xyz);
+    vAlpha = uClearBackground > 0.5 ? 1.0 - step(0.5, finalColor) : 1.0;
+    vCellUv = position.xy + 0.5;
+    vGlyph = 0.0;
+    vGlyphOn = 0.0;
+    if (uGlyphMode > 0.5) {
+      float h = fract(sin(dot(vec2(aRow * 1.37, aColumn * 2.91), vec2(12.9898, 78.233))) * 43758.5453);
+      float fig = 1.0 - step(0.5, finalColor);
+      float drift = floor(uGlyphTime * (0.35 + h * 0.85));
+      vGlyph = mod(floor(h * uGlyphCount + drift), max(uGlyphCount, 1.0));
+      float blink = step(0.972, fract(h * 9.7 + floor(uGlyphTime * 0.45) * 0.17));
+      vGlyphOn = fig + (1.0 - fig) * blink;
+      vAlpha = vGlyphOn > 0.02 ? 1.0 : 0.0;
+    }
   }
 `;
 
 export const fragmentShader = `
   varying vec3 vColor;
   varying vec3 vNormal;
+  varying float vAlpha;
+  varying vec2 vCellUv;
+  varying float vGlyph;
+  varying float vGlyphOn;
+
+  uniform float uGlyphMode;
+  uniform vec2 uGlyphGrid;
+  uniform sampler2D uGlyphs;
 
   void main() {
+    if (vAlpha < 0.5) discard;
+    if (uGlyphMode > 0.5) {
+      if (abs(vNormal.z) < 0.6 || vGlyphOn < 0.02) discard;
+      vec2 guv = clamp(vCellUv, 0.04, 0.96);
+      float col = mod(vGlyph, uGlyphGrid.x);
+      float row = floor(vGlyph / uGlyphGrid.x);
+      vec2 atlasUv = (vec2(col, row) + vec2(guv.x, 1.0 - guv.y)) / uGlyphGrid;
+      atlasUv.y = 1.0 - atlasUv.y;
+      float ink = texture2D(uGlyphs, atlasUv).r;
+      if (ink < 0.4) discard;
+      float shade = vGlyphOn > 0.7 ? 0.0 : 0.8;
+      gl_FragColor = vec4(vec3(shade), 1.0);
+      return;
+    }
     float shadow = dot(normalize(vec3(0.0, 1.0, 1.0)), normalize(vNormal));
     vec3 color = vColor * (0.9 + 0.6 * shadow);
     color = clamp(vec3(0.0), vec3(1.0), color);
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, vAlpha);
   }
 `;

@@ -23,17 +23,12 @@ export function setupContactChapter({ section, canvas }: ContactChapterOptions) 
   section.classList.add("is-contact-active");
 
   if (mobile) {
-    section.classList.add("is-contact-static");
     gsap.set(section, { y: 0, clearProps: "transform" });
-    return () => {
-      gsap.set(section, { clearProps: "transform" });
-      section.classList.remove("is-contact-active", "is-contact-static");
-    };
   }
 
   let riseTween: gsap.core.Tween | null = null;
 
-  if (!reduceMotion) {
+  if (!reduceMotion && !mobile) {
     riseTween = gsap.fromTo(
       section,
       {
@@ -61,7 +56,8 @@ export function setupContactChapter({ section, canvas }: ContactChapterOptions) 
     imageCover: true,
     gridColumns: 300,
     gridRows: 169,
-    enableMouseRepel: !reduceMotion,
+    enableMouseRepel: !reduceMotion && !mobile,
+    clearBackground: true,
   });
 
   return () => {

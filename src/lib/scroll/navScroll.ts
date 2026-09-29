@@ -1,56 +1,29 @@
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { HERO_SCROLL, SCROLL_EVENTS } from "./scrollConfig";
-import {
-  getHeroScrollTrigger,
-  HERO_SCROLL_ID,
-  scrollYForTriggerProgress,
-} from "./scrollDirector";
 import { lenisScrollToY } from "./initLenis";
 
-export const ABOUT_SECTION_PROGRESS = HERO_SCROLL.aboutNavProgress;
+function scrollToSection(id: string, duration: number) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const y = window.scrollY + el.getBoundingClientRect().top;
+  lenisScrollToY(Math.max(0, y), { duration, lock: false });
+}
 
-export function scrollToAboutSection(duration = 2.65) {
-  const st = ScrollTrigger.getById(HERO_SCROLL_ID);
-  if (!st) {
-    document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
-    return;
-  }
-
-  lenisScrollToY(scrollYForTriggerProgress(st, ABOUT_SECTION_PROGRESS), {
-    duration,
-  });
+export function scrollToAboutSection(duration = 1.4) {
+  scrollToSection("about", duration);
 }
 
 export function scrollToWorkSection() {
-  const heroST = getHeroScrollTrigger();
-  if (!heroST) {
-    document.getElementById("work")?.scrollIntoView({ behavior: "smooth" });
-    return;
-  }
-
-  lenisScrollToY(heroST.end, { duration: 3.2 });
+  scrollToSection("work", 1.6);
 }
 
-export function setupAboutNavLinks() {
-  document.querySelectorAll<HTMLAnchorElement>('a[href="#about"]').forEach((link) => {
-    link.addEventListener("click", (event) => {
-      event.preventDefault();
-      scrollToAboutSection();
-    });
-  });
-}
-
-export function setupWorkNavLinks() {
-  document.querySelectorAll<HTMLAnchorElement>('a[href="#work"]').forEach((link) => {
-    link.addEventListener("click", (event) => {
-      event.preventDefault();
-      scrollToWorkSection();
-    });
-  });
-}
-
-/** Registra enlaces de nav que dependen del timeline de scroll. */
+/** Registra enlaces internos para que el scroll pase el hero fijado. */
 export function setupScrollNavLinks() {
-  setupAboutNavLinks();
-  setupWorkNavLinks();
+  document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((link) => {
+    const id = link.getAttribute("href")?.slice(1) ?? "";
+    if (!id || !document.getElementById(id)) return;
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      scrollToSection(id, id === "contact" ? 1.8 : 1.45);
+    });
+  });
 }

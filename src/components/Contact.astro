@@ -1,4 +1,5 @@
 ---
+import { site } from "../data/site";
 ---
 
 <section
@@ -10,28 +11,33 @@
   <canvas class="contact-scene__canvas webgl" aria-hidden="true"></canvas>
 
   <div class="contact-scene__content page-x">
-    <p class="contact-scene__intro">
-      <span>Let's build together.</span>
-      <span>Got a project in mind? Let's talk.</span>
+    <p class="chapter-mark">
+      <span class="chapter-mark__index">04</span>
+      Contact
     </p>
-    <p class="hero-intro__lead hero-intro__lead--on-light contact-scene__lead font-pixel">
-      <a
-        href="mailto:alejandro@arkapp.es"
-        class="contact-scene__mailto hero-intro__lead-line contact-scene__lead-line"
-      >
-        <span>Contact me</span>
-        <img
-          src="/right-up.png"
-          alt=""
-          class="contact-scene__arrow"
-          width="96"
-          height="96"
-          loading="lazy"
-          decoding="async"
-          aria-hidden="true"
-        />
+    <div class="contact-scene__main">
+      <p class="contact-scene__intro">Let's build together.</p>
+      <a class="contact-scene__mailto" href={`mailto:${site.email}`}>
+        {site.email}
       </a>
-    </p>
+      <a class="contact-scene__cta font-pixel" href={`mailto:${site.email}`}>
+        &gt; Contact
+      </a>
+    </div>
+    <footer class="contact-scene__bar">
+      <nav class="contact-scene__links" aria-label="Social">
+        {
+          site.socials
+            .filter((item) => item.href !== "#")
+            .map((item) => (
+              <a href={item.href} target="_blank" rel="noopener noreferrer">
+                {item.label}
+              </a>
+            ))
+        }
+      </nav>
+      <a class="contact-scene__top" href="#main">Back to top</a>
+    </footer>
   </div>
 </section>
 
@@ -42,26 +48,15 @@
     width: 100vw;
     max-width: 100vw;
     margin-left: calc(50% - 50vw);
-    margin-top: calc(-1 * clamp(2.5rem, 8vh, 5rem));
+    margin-top: 0;
     min-height: 100vh;
     min-height: 100dvh;
-    border-radius: clamp(1.25rem, 2.5vw, 2rem) clamp(1.25rem, 2.5vw, 2rem) 0 0;
-    background-color: #ffffff;
-    box-shadow: 0 -18px 56px rgba(0, 0, 0, 0.14);
+    border-radius: 0;
+    background-color: transparent;
+    box-shadow: none;
     overflow: hidden;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
     will-change: transform;
-  }
-
-  .contact-scene.is-contact-static {
-    background-image: url("/contact-def.png");
-    background-size: cover;
-    background-position: center top;
-    background-repeat: no-repeat;
-    will-change: auto;
-  }
-
-  .contact-scene.is-contact-static .contact-scene__canvas {
-    display: none;
   }
 
   @media (max-width: 767px) {
@@ -77,7 +72,8 @@
     width: 100%;
     height: 100%;
     display: block;
-    background-color: #ffffff;
+    background-color: transparent;
+    filter: invert(1);
     opacity: 0;
   }
 
@@ -91,102 +87,97 @@
     z-index: 2;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding-top: clamp(2.5rem, 14vh, 20vh);
-    padding-bottom: clamp(1.25rem, 3.5vh, 2rem);
+    align-items: stretch;
+    justify-content: space-between;
+    padding-top: clamp(5.5rem, 12vh, 7rem);
+    padding-bottom: clamp(1.25rem, 3vh, 1.75rem);
     pointer-events: none;
+  }
+
+  .contact-scene__main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.85rem;
+    margin-top: auto;
+    margin-bottom: clamp(1.25rem, 4vh, 2.5rem);
+    max-width: 52rem;
   }
 
   .contact-scene__intro {
     margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.35rem;
-    font-family: var(--font-zirena);
-    font-size: clamp(1.3rem, 2.6vw, 1.75rem);
-    font-weight: 500;
-    line-height: 1.45;
-    letter-spacing: -0.04em;
-    text-align: center;
-    color: #0a0a0a;
-  }
-
-  .contact-scene__lead {
-    width: 100%;
-    margin-top: auto;
-    font-family: var(--font-pixel);
-    font-size: clamp(2.75rem, 12vw, 9rem);
-    line-height: 0.92;
-    letter-spacing: -0.16em;
-    word-spacing: -0.12em;
-    text-align: center;
-    color: #0a0a0a;
-  }
-
-  .contact-scene__lead .hero-intro__lead-line {
-    text-align: center;
-  }
-
-  .contact-scene__lead-line {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(0.5rem, 2vw, 1.25rem);
+    font-family: var(--font-sans);
+    font-size: clamp(1rem, 1.4vw, 1.2rem);
+    line-height: 1.5;
+    letter-spacing: -0.011em;
+    color: rgba(255, 255, 255, 0.62);
   }
 
   .contact-scene__mailto {
-    color: inherit;
+    color: #fff;
+    font-family: var(--font-zirena);
+    font-size: clamp(1.8rem, 4.8vw, 4.25rem);
+    font-weight: 500;
+    line-height: 0.95;
+    letter-spacing: -0.045em;
     text-decoration: none;
-    cursor: pointer;
+    text-transform: lowercase;
     pointer-events: auto;
   }
 
-  .contact-scene__arrow {
-    width: clamp(3.5rem, 12vw, 8.5rem);
-    height: auto;
-    flex-shrink: 0;
-    align-self: center;
-    margin-top: 0.08em;
-    transform: translate(0, 0);
-    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  .contact-scene__mailto:hover {
+    opacity: 0.72;
   }
 
-  .contact-scene__mailto:hover .contact-scene__arrow {
-    animation: contact-arrow-bounce 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  .contact-scene__cta {
+    margin-top: 0.35rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: #fff;
+    pointer-events: auto;
   }
 
-  @keyframes contact-arrow-bounce {
-    0% {
-      transform: translate(0, 0) scale(1);
-    }
-    35% {
-      transform: translate(0.55rem, -1.35rem) scale(1.08);
-    }
-    55% {
-      transform: translate(0.22rem, -0.55rem) scale(1.02);
-    }
-    75% {
-      transform: translate(0.48rem, -1.05rem) scale(1.05);
-    }
-    100% {
-      transform: translate(0.42rem, -0.95rem) scale(1.04);
+  .contact-scene__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    font-family: var(--font-pixel);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+    pointer-events: auto;
+  }
+
+  .contact-scene__links {
+    display: flex;
+    gap: 1.25rem;
+  }
+
+  .contact-scene__bar a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .contact-scene__bar a:hover {
+    color: #fff;
+  }
+
+  @media (max-width: 700px) {
+    .contact-scene__bar {
+      flex-wrap: wrap;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .contact-scene {
       will-change: auto;
-    }
-
-    .contact-scene__arrow {
-      transition: none;
-      animation: none !important;
-    }
-
-    .contact-scene__mailto:hover .contact-scene__arrow {
-      transform: none;
     }
 
     .contact-scene__canvas {

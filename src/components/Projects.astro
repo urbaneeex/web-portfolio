@@ -1,343 +1,150 @@
 ---
 import { workProjects } from "../data/site";
 
-const initial = workProjects[0];
+const collageOrder = ["juan-cano", "arkapp", "angel-lavayen"];
+const collage = [
+  ...collageOrder.flatMap((id) => workProjects.filter((project) => project.id === id)),
+  ...workProjects.filter((project) => !collageOrder.includes(project.id)),
+];
 ---
 
-<section
-  id="work"
-  class="work-section page-x scroll-mt-24"
-  data-work-section
->
-  <div class="work-section__inner mx-auto max-w-[88rem]">
-    <div class="work-section__tour-track" data-work-tour-track>
-      <div class="work-section__tour-stage" data-work-tour-stage>
-        <div class="work-section__layout">
-          <div class="work-section__list" data-work-list role="tablist" aria-label="Projects">
-        {
-          workProjects.map((project, i) => (
-            <>
-              <button
-                type="button"
-                class:list={[
-                  "work-item",
-                  { "is-active": i === 0 },
-                ]}
-                role="tab"
-                aria-selected={i === 0}
-                aria-controls="work-preview-panel"
-                id={`work-tab-${project.id}`}
-                data-work-item
-                data-project-id={project.id}
-                data-project-index={project.index}
-                data-project-year={project.year}
-                data-project-title={project.title}
-                data-project-href={project.href}
-                data-project-image={project.image}
-                data-project-alt={project.imageAlt}
-              >
-                <span class="work-item__label font-pixel">
-                  <span class="work-item__label-slot">
-                    <span class="work-item__ghost" aria-hidden="true">{project.title}</span>
-                    <span class="work-item__static">{project.title}</span>
-                    <span class="work-item__live" aria-hidden="true">
-                      <span class="work-item__typed">{i === 0 ? project.title : ""}</span>
+<section id="work" class="work-board page-x scroll-mt-24" data-work-section aria-labelledby="work-heading">
+  <h2 id="work-heading" class="chapter-mark work-board__title">
+    <span class="chapter-mark__index">02</span>
+    Works
+  </h2>
+  <div class="work-board__stage">
+    <ul class="work-board__collage">
+      {
+        collage.map((project) => (
+          <li class="work-card">
+            <a
+              class="work-card__link"
+              href={project.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span class="work-card__media" data-card-media>
+                <img
+                  class="work-card__image"
+                  src={project.image}
+                  alt={project.imageAlt}
+                  width="1200"
+                  height="750"
+                  decoding="async"
+                />
+              </span>
+              <span class="work-card__caption">
+                <span class="work-card__title" data-card-title={project.title}>
+                  <span class="work-card__slot">
+                    <span class="work-card__ghost" aria-hidden="true">{project.title}</span>
+                    <span class="work-card__static">{project.title}</span>
+                    <span class="work-card__live" aria-hidden="true">
+                      <span class="work-card__typed"></span>
                     </span>
                   </span>
                 </span>
-              </button>
-              {i < workProjects.length - 1 && (
-                <div class="work-item__divider font-pixel" aria-hidden="true">
-                  ................................................................................................................................................................................................................
-                </div>
-              )}
-            </>
-          ))
-        }
-      </div>
-
-      <div
-        class="work-section__preview"
-        id="work-preview-panel"
-        role="tabpanel"
-        aria-labelledby={`work-tab-${initial.id}`}
-        data-work-preview
-      >
-        <div class="work-preview__frame" data-work-preview-frame>
-          <img
-            class="work-preview__image"
-            data-work-preview-image
-            src={initial.image}
-            alt={initial.imageAlt}
-            width={1200}
-            height={750}
-            decoding="async"
-          />
-        </div>
-        <a
-          class="work-preview__link font-pixel"
-          data-work-preview-link
-          href={initial.href}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Open link
-          <svg class="work-preview__link-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path
-              d="M7 13L13 7M13 7H9M13 7V11"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </a>
-      </div>
-        </div>
-      </div>
-    </div>
+                <span class="work-card__kind font-pixel">{project.kind}</span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
   </div>
 </section>
 
 <style>
-  .work-section {
+  .work-board {
     position: relative;
     z-index: 3;
-    /* Iguala la altura del hero: Work entra cuando el pin termina (sin hueco de 100vh). */
-    margin-top: -100vh;
-    margin-top: -100dvh;
-    /* Solo abajo: no pisar el padding horizontal de .page-x */
-    padding-bottom: clamp(3.5rem, 8vh, 5rem);
-    border: none;
-    background-color: transparent;
-    color: var(--color-ink);
-    opacity: 0;
-    will-change: transform, opacity;
+    padding-bottom: clamp(3.5rem, 8vh, 5.5rem);
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    background: transparent;
+    color: #fff;
   }
 
-  .work-section.is-work-ready,
-  .work-section.is-work-entering {
-    z-index: 12;
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  .work-section.is-work-ready {
-    opacity: 1;
-    will-change: auto;
-  }
-
-  .work-section:not(.is-work-ready):not(.is-work-entering) {
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  .work-section.is-work-ready .work-section__tour-stage,
-  .work-section.is-work-entering .work-section__tour-stage {
-    height: 100dvh;
-    min-height: 100dvh;
-    box-sizing: border-box;
-  }
-
-  .work-section__tour-track {
+  .work-board__title {
     position: relative;
+    z-index: 2;
+    padding-top: clamp(5.5rem, 12vh, 7rem);
   }
 
-  .work-section__tour-stage {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: clamp(4.5rem, 10vh, 5.75rem) 0 clamp(2.5rem, 6vh, 3.5rem);
-    box-sizing: border-box;
-  }
-
-  .work-section__layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: clamp(2.5rem, 6vw, 4rem);
-    align-items: center;
-    width: 100%;
-    min-height: calc(100dvh - clamp(7rem, 16vh, 9.25rem));
-  }
-
-  @media (max-width: 767px) {
-    .work-section {
-      padding-inline: clamp(1.35rem, 5vw, 2rem);
-    }
-
-    .work-section__layout {
-      gap: clamp(2rem, 5vh, 2.75rem);
-    }
-
-    .work-preview__link {
-      margin-right: 0;
-    }
-  }
-
-  @media (min-width: 900px) {
-    .work-section__layout {
-      grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
-      gap: clamp(2rem, 4vw, 3.5rem);
-    }
-  }
-
-  .work-section__list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+  .work-board__stage {
     position: relative;
-    align-self: center;
-    justify-content: center;
-    min-width: 0;
+    height: clamp(36rem, 78vh, 46rem);
+    margin-top: clamp(0.5rem, 2vh, 1.25rem);
   }
 
-  .work-section.is-scroll-tour-active .work-section__preview {
-    will-change: auto;
-  }
-
-  .work-section.is-scroll-tour-active .work-preview__grid {
-    contain: layout style paint;
-  }
-
-  .work-item.is-active .work-item__static,
-  .work-item.is-work-hover .work-item__static {
-    visibility: hidden;
-  }
-
-  .work-item.is-active .work-item__live,
-  .work-item.is-work-hover .work-item__live {
-    opacity: 1;
-    visibility: visible;
-    color: #000;
-  }
-
-  .work-item.is-active .work-item__typed,
-  .work-item.is-work-hover .work-item__typed {
-    color: #000;
-    background-color: #fff;
-    -webkit-text-stroke: 0;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-    padding: 0.06em 0.12em;
-  }
-
-  .work-section.is-scroll-tour-active .work-item {
-    cursor: pointer;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .work-section {
-      margin-top: 0;
-      opacity: 1;
-    }
-  }
-
-  .work-item {
+  .work-board__collage {
     position: relative;
-    display: block;
-    width: 100%;
+    height: 100%;
     margin: 0;
-    padding: clamp(1.1rem, 2.5vh, 1.65rem) 0;
-    border: none;
-    background: transparent;
-    text-align: left;
-    cursor: pointer;
-    color: color-mix(in srgb, var(--color-ink) 28%, transparent);
-    transition: color 0.35s var(--ease-out-soft);
+    padding: 0;
+    list-style: none;
   }
 
-  .work-item.is-active {
-    color: var(--color-ink);
+  .work-card {
+    position: absolute;
+    width: 34%;
   }
 
-  .work-item__label {
+  .work-card:nth-child(1) {
+    left: 0;
+    top: 16%;
+    width: 44%;
+    z-index: 1;
+  }
+
+  .work-card:nth-child(2) {
+    left: 28%;
+    top: 0;
+    width: 42%;
+    z-index: 2;
+  }
+
+  .work-card:nth-child(3) {
+    right: 0;
+    top: 22%;
+    width: 42%;
+    z-index: 1;
+  }
+
+  .work-card__link {
     display: block;
-    font-family: var(--font-pixel);
-    font-size: clamp(1.65rem, 3.2vw, 2.35rem);
-    line-height: 1.15;
-    letter-spacing: -0.05em;
-    -webkit-text-stroke: 0.35px currentColor;
-    paint-order: stroke fill;
+    color: inherit;
+    text-decoration: none;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
   }
 
-  .work-item__label-slot {
+  .work-card.is-work-hover .work-card__link,
+  .work-card__link:hover {
+    border-color: #fff;
+    box-shadow: 0 0 0 1px #fff;
+  }
+
+  .work-card.is-work-hover .work-card__image,
+  .work-card__link:hover .work-card__image {
+    filter: grayscale(1) contrast(1.08) brightness(1.06);
+  }
+
+  .work-card__media {
     position: relative;
-    display: inline-block;
+    display: block;
+    overflow: hidden;
   }
 
-  .work-item__ghost {
-    visibility: hidden;
-    user-select: none;
-  }
-
-  .work-item__static {
-    position: absolute;
-    inset: 0;
-    white-space: nowrap;
-  }
-
-  .work-item__live {
-    position: absolute;
-    inset: 0;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-  }
-
-  .work-item.is-work-hover .work-item__static {
-    visibility: hidden;
-  }
-
-  .work-item.is-work-hover .work-item__live {
-    opacity: 1;
-    visibility: visible;
-    color: #000;
-  }
-
-  .work-item.is-work-hover .work-item__typed {
-    color: #000;
-    background-color: #fff;
-    -webkit-text-stroke: 0;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-    padding: 0.06em 0.12em;
-  }
-
-  .work-item__divider {
+  .work-card__image {
+    display: block;
     width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    font-family: var(--font-pixel);
-    font-size: clamp(0.9375rem, 2.1vw, 1.25rem);
-    letter-spacing: 0.12em;
-    line-height: 1;
-    color: color-mix(in srgb, var(--color-ink) 42%, transparent);
-    -webkit-text-stroke: 0.3px currentColor;
-    paint-order: stroke fill;
-    user-select: none;
-    pointer-events: none;
-  }
-
-  .work-section__preview {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    align-self: center;
-  }
-
-  .work-preview__frame {
-    position: relative;
-    overflow: hidden;
-    border-radius: 0.35rem;
-    background: transparent;
     aspect-ratio: 16 / 10;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 12%, transparent);
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.05);
   }
 
-  :global(.work-preview__grid) {
+  :global(.work-card__media .work-preview__grid) {
     position: absolute;
     inset: 0;
     z-index: 2;
@@ -347,7 +154,7 @@ const initial = workProjects[0];
     pointer-events: none;
   }
 
-  :global(.work-preview__cell) {
+  :global(.work-card__media .work-preview__cell) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -356,125 +163,209 @@ const initial = workProjects[0];
     font-family: var(--font-pixel);
     font-size: clamp(5px, 0.48vw, 8px);
     line-height: 1;
-    letter-spacing: 0;
     color: #fff;
     opacity: 0;
-    transform: scale(0.88);
-    -webkit-text-stroke: 0;
     overflow: hidden;
     text-transform: lowercase;
   }
 
-  :global(.work-preview__cell.is-active) {
+  :global(.work-card__media .work-preview__cell.is-active) {
     opacity: 1;
-    transform: scale(1);
-    image-rendering: pixelated;
   }
 
-  :global(.work-preview__cell.is-active.is-empty) {
+  :global(.work-card__media .work-preview__cell.is-active.is-empty) {
     color: transparent;
     background-color: rgba(0, 0, 0, 0.72);
   }
 
-  .work-preview__image {
+  .work-card__caption {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.7rem 0.8rem 0.85rem;
+  }
+
+  .work-card__kind {
+    flex-shrink: 0;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  .work-card__title {
+    min-width: 0;
+    font-family: var(--font-zirena);
+    font-size: clamp(1.15rem, 1.8vw, 1.7rem);
+    font-weight: 500;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+  }
+
+  .work-card__slot {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .work-card__ghost {
+    visibility: hidden;
+    user-select: none;
+  }
+
+  .work-card__static,
+  .work-card__live {
     position: absolute;
     inset: 0;
-    z-index: 1;
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center center;
-    transform-origin: center center;
+    white-space: nowrap;
   }
 
-  :global(.work-preview__image--outgoing.is-transitioning) {
-    z-index: 1;
-    image-rendering: pixelated;
-    -webkit-mask-mode: luminance;
-    mask-mode: luminance;
+  .work-card__live {
+    opacity: 0;
+    visibility: hidden;
   }
 
-  :global(.work-preview__image--incoming.is-transitioning) {
-    z-index: 0;
+  .work-card.is-work-hover .work-card__static {
+    visibility: hidden;
   }
 
-  :global(.work-preview__image--incoming) {
-    z-index: 0;
+  .work-card.is-work-hover .work-card__live {
+    opacity: 1;
+    visibility: visible;
   }
 
-  :global(.work-preview__image--incoming[hidden]) {
-    display: none;
+  .work-card.is-work-hover .work-card__typed {
+    color: #000;
+    background-color: #fff;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    padding: 0.04em 0.1em;
   }
 
-  .work-preview__link {
-    align-self: flex-end;
-    margin-top: clamp(0.85rem, 2vh, 1.15rem);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    padding: 0;
-    border: none;
-    font-size: clamp(0.875rem, 1.5vw, 1.0625rem);
-    letter-spacing: -0.1em;
-    text-transform: uppercase;
-    text-decoration: none;
-    color: var(--color-ink);
-    background: transparent;
-  }
+  @media (max-width: 767px) {
+    .work-board__stage {
+      height: auto;
+    }
 
-  .work-preview__link-icon {
-    flex-shrink: 0;
-  }
+    .work-board__collage {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      height: auto;
+    }
 
+    .work-card,
+    .work-card:nth-child(1),
+    .work-card:nth-child(2),
+    .work-card:nth-child(3) {
+      position: relative;
+      left: auto;
+      right: auto;
+      top: auto;
+      width: 86%;
+    }
+
+    .work-card:nth-child(even) {
+      margin-left: auto;
+    }
+
+    .work-card + .work-card {
+      margin-top: -1.75rem;
+    }
+  }
 </style>
 
 <script>
-  import { setupPageScroll } from "../lib/scroll/setupPageScroll";
-  import { scrollToWorkProject } from "../lib/scroll/workChapter";
+  import { gsap } from "gsap";
+  import { SCROLL_EVENTS, WORK_SCROLL } from "../lib/scroll/scrollConfig";
+  import { WORK_GRID, WorkPreviewGrid } from "../lib/scroll/workPreviewGrid";
 
   const section = document.querySelector<HTMLElement>("[data-work-section]");
-  const trackEl = section?.querySelector<HTMLElement>("[data-work-tour-track]");
-  const stageEl = section?.querySelector<HTMLElement>("[data-work-tour-stage]");
-  const items = [
-    ...section?.querySelectorAll<HTMLButtonElement>("[data-work-item]") ?? [],
-  ];
-  const previewImage = section?.querySelector<HTMLImageElement>("[data-work-preview-image]");
-  const previewFrame = section?.querySelector<HTMLElement>("[data-work-preview-frame]");
-  const openLink = section?.querySelector<HTMLAnchorElement>("[data-work-preview-link]");
-  const previewPanel = section?.querySelector<HTMLElement>("[data-work-preview]");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let typewriter: gsap.core.Tween | null = null;
+  const grids = new Map<HTMLElement, { grid: WorkPreviewGrid; tween: gsap.core.Tween | null }>();
 
-  let disposePageScroll: (() => void) | undefined;
+  section?.querySelectorAll<HTMLElement>(".work-card").forEach((card) => {
+    const title = card.querySelector<HTMLElement>("[data-card-title]");
+    const typed = card.querySelector<HTMLElement>(".work-card__typed");
+    const media = card.querySelector<HTMLElement>("[data-card-media]");
+    const label = title?.dataset.cardTitle ?? "";
+    if (!title || !typed || !media) return;
 
-  items.forEach((item, index) => {
-    item.addEventListener("click", () => {
-      scrollToWorkProject(index, items);
-    });
+    const playSquares = () => {
+      if (reduceMotion) return;
+      let entry = grids.get(media);
+      if (!entry) {
+        entry = { grid: new WorkPreviewGrid(media), tween: null };
+        grids.set(media, entry);
+      }
+      entry.tween?.kill();
+      entry.grid.coverFully();
+      entry.grid.startShuffleLoop();
+      const state = { progress: 0 };
+      entry.tween = gsap.to(state, {
+        progress: 1,
+        duration: WORK_GRID.switchDuration,
+        ease: "none",
+        repeat: -1,
+        onUpdate: () => {
+          entry?.grid.applyTransitionProgress(state.progress, true);
+        },
+      });
+    };
+
+    const stopSquares = () => {
+      const entry = grids.get(media);
+      if (!entry) return;
+      entry.tween?.kill();
+      entry.tween = null;
+      entry.grid.revealFully();
+    };
+
+    const play = () => {
+      typewriter?.kill();
+      card.classList.add("is-work-hover");
+      playSquares();
+      if (reduceMotion) {
+        typed.textContent = label;
+        return;
+      }
+      typed.textContent = "";
+      const state = { chars: 0 };
+      typewriter = gsap.to(state, {
+        chars: label.length,
+        duration: WORK_SCROLL.typewriterDuration,
+        ease: "power2.out",
+        onUpdate: () => {
+          typed.textContent = label.slice(0, Math.round(state.chars));
+        },
+        onComplete: () => {
+          typed.textContent = label;
+          typewriter = null;
+        },
+      });
+    };
+
+    const stop = () => {
+      typewriter?.kill();
+      typewriter = null;
+      card.classList.remove("is-work-hover");
+      typed.textContent = "";
+      stopSquares();
+    };
+
+    card.addEventListener("mouseenter", play);
+    card.addEventListener("mouseleave", stop);
+    card.addEventListener("focusin", play);
+    card.addEventListener("focusout", stop);
   });
 
-  if (
-    section &&
-    trackEl &&
-    stageEl &&
-    previewImage &&
-    previewFrame &&
-    openLink &&
-    previewPanel &&
-    items.length > 0
-  ) {
-    disposePageScroll = setupPageScroll({
-      section,
-      trackEl,
-      stageEl,
-      items,
-      previewPanel,
-      previewFrame,
-      previewImage,
-      openLink,
-    });
+  if (section) {
+    section.classList.add("is-work-ready");
+    window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent(SCROLL_EVENTS.workReady));
+    }, 0);
   }
-
-  document.addEventListener("astro:beforeunload", () => {
-    disposePageScroll?.();
-  });
 </script>

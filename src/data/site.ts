@@ -30,6 +30,7 @@ export type WorkProject = {
   index: string;
   title: string;
   year: string;
+  kind: string;
   href: string;
   image: string;
   imageAlt: string;
@@ -45,6 +46,7 @@ export const workProjects: WorkProject[] = [
     index: "01",
     title: "Arkapp",
     year: "2025",
+    kind: "PWA",
     href: "#",
     image: projectImage("arkapp-portfolio"),
     imageAlt: "Arkapp project preview",
@@ -54,6 +56,7 @@ export const workProjects: WorkProject[] = [
     index: "02",
     title: "Juan Cano",
     year: "2025",
+    kind: "Website",
     href: "#",
     image: projectImage("juan-cano-portfolio"),
     imageAlt: "Juan Cano project preview",
@@ -63,6 +66,7 @@ export const workProjects: WorkProject[] = [
     index: "03",
     title: "Angel Lavayen",
     year: "2024",
+    kind: "Website",
     href: "#",
     image: projectImage("angel-lavayen-portfolio"),
     imageAlt: "Angel Lavayen project preview",

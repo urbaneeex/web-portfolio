@@ -1,7 +1,7 @@
 ---
-import { skillStacks, skillIconSrc } from "../data/skills";
+import { skillGroups } from "../data/skills";
 
-const initialStack = skillStacks[0];
+const indexLabel = (index: number) => String(index + 1).padStart(2, "0");
 ---
 
 <section
@@ -10,63 +10,44 @@ const initialStack = skillStacks[0];
   data-skills-section
   aria-labelledby="skills-heading"
 >
-  <div class="skills-section__tour-track" data-skills-tour-track>
-    <div class="skills-section__tour-stage" data-skills-tour-stage>
-      <header class="skills-section__header">
-        <h2 id="skills-heading" class="skills-section__title">
-          <span class="skills-section__title-text">
-            <span class="skills-section__rest">Always learning. Always </span><span class="skills-section__accent font-pixel">building</span><span class="skills-section__rest">.</span>
-          </span>
-        </h2>
-      </header>
+  <header class="skills-section__header">
+    <p class="chapter-mark">
+      <span class="chapter-mark__index">03</span>
+      Skills
+    </p>
+    <h2 id="skills-heading" class="chapter-title skills-section__title">
+      Always learning.<br />Always building.
+    </h2>
+  </header>
 
-      <div class="skills-stack">
-        <div class="skills-stack__stage">
-          {
-            skillStacks.map((stack, stackIndex) => (
-              <ul
-                class="skills-stack__icons"
-                data-skills-icon-layer
-                data-stack-index={stackIndex}
-                aria-label={`${stack.label} tools`}
-                style={stackIndex === 0 ? undefined : { opacity: 0 }}
-              >
-                {
-                  stack.icons.map((icon, index) => (
-                    <li
-                      class="skills-stack__icon"
-                      style={{
-                        "--x": `${icon.x}%`,
-                        "--y": `${icon.y}%`,
-                        "--scale": icon.scale ?? 1,
-                        "--rotate": `${icon.rotate ?? 0}deg`,
-                        "--float-delay": `${index * 0.35}s`,
-                      }}
-                    >
-                      <span class="skills-stack__icon-inner">
-                        <img
-                          src={skillIconSrc(icon.icon)}
-                          alt={icon.name}
-                          width={48}
-                          height={48}
-                          loading="lazy"
-                          decoding="async"
-                          title={icon.name}
-                        />
-                      </span>
-                    </li>
-                  ))
-                }
-              </ul>
-            ))
-          }
-
-          <h3 class="skills-stack__label font-pixel" data-skills-label>
-            {initialStack.label}
-          </h3>
-        </div>
-      </div>
-    </div>
+  <div class="skills-board">
+    {
+      skillGroups.map((group, groupIndex) => (
+        <article class="skills-row" data-skills-row>
+          <header class="skills-row__head">
+            <span class="skills-row__index font-pixel">{indexLabel(groupIndex)}</span>
+            <h3 class="skills-row__label" data-stack-title={group.label}>
+              <span class="skills-row__slot">
+                <span class="skills-row__ghost" aria-hidden="true">
+                  {group.label}
+                </span>
+                <span class="skills-row__static">{group.label}</span>
+                <span class="skills-row__live" aria-hidden="true">
+                  <span class="skills-row__typed" />
+                </span>
+              </span>
+            </h3>
+          </header>
+          <ul class="skills-row__tools">
+            {group.items.map((name) => (
+              <li>
+                <span class="skills-tool">{name}</span>
+              </li>
+            ))}
+          </ul>
+        </article>
+      ))
+    }
   </div>
 </section>
 
@@ -74,223 +55,200 @@ const initialStack = skillStacks[0];
   .skills-section {
     position: relative;
     z-index: 4;
-    border: none;
-    background-color: transparent;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    padding-top: clamp(5.5rem, 12vh, 7rem);
+    padding-bottom: clamp(4.5rem, 10vh, 6.5rem);
     color: #fff;
-    opacity: 0;
-    will-change: transform, opacity;
-  }
-
-  .skills-section.is-skills-entering,
-  .skills-section.is-skills-ready {
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  .skills-section.is-skills-ready {
-    opacity: 1;
-    will-change: auto;
-  }
-
-  .skills-section:not(.is-skills-ready):not(.is-skills-entering) {
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  .skills-section__tour-track {
-    position: relative;
-  }
-
-  .skills-section__tour-stage {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    box-sizing: border-box;
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: clamp(5rem, 11vh, 6.5rem) 0 clamp(3rem, 6vh, 4rem);
-  }
-
-  .skills-section.is-skills-tour-active .skills-section__tour-stage {
-    height: 100dvh;
-    min-height: 100dvh;
   }
 
   .skills-section__header {
     display: flex;
-    justify-content: center;
-    text-align: center;
-    margin-bottom: clamp(2rem, 5vh, 3rem);
-    flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(1rem, 2.5vh, 1.5rem);
   }
 
   .skills-section__title {
-    margin: 0;
-    font-size: clamp(1.9rem, 4.35vw, 3rem);
-    line-height: 1.35;
-    letter-spacing: -0.045em;
-    color: #fff;
-    text-align: center;
+    max-width: 11em;
   }
 
-  .skills-section__title-text {
+  .skills-board {
+    margin-top: clamp(2.75rem, 7vh, 4.5rem);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .skills-row {
+    display: grid;
+    grid-template-columns: minmax(8.5rem, 13.5rem) minmax(0, 1fr);
+    gap: clamp(1.25rem, 4vw, 3rem);
+    align-items: start;
+    padding: clamp(1.35rem, 3.2vh, 2.1rem) 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .skills-row__head {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+    padding-top: 0.15rem;
+  }
+
+  .skills-row__index {
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .skills-row__label {
+    margin: 0;
+    font-family: var(--font-zirena);
+    font-size: clamp(1.7rem, 2.6vw, 2.55rem);
+    font-weight: 500;
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  .skills-row__slot {
+    position: relative;
     display: inline-block;
+  }
+
+  .skills-row__ghost {
+    visibility: hidden;
+    user-select: none;
+  }
+
+  .skills-row__static,
+  .skills-row__live {
+    position: absolute;
+    inset: 0;
     white-space: nowrap;
   }
 
-  .skills-section__accent {
-    font-style: italic;
-    letter-spacing: -0.17em;
-    word-spacing: -0.18em;
-    -webkit-text-stroke: 0.35px currentColor;
-    paint-order: stroke fill;
+  .skills-row__live {
+    opacity: 0;
+    visibility: hidden;
   }
 
-  .skills-section__rest {
-    font-family: var(--font-zirena);
-    font-weight: 500;
-    letter-spacing: -0.045em;
+  .skills-row.is-skills-hover .skills-row__static {
+    visibility: hidden;
   }
 
-  .skills-stack {
-    flex: 1;
+  .skills-row.is-skills-hover .skills-row__live {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .skills-row.is-skills-hover .skills-row__typed {
+    color: #000;
+    background-color: #fff;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    padding: 0.04em 0.08em;
+  }
+
+  .skills-row__tools {
     display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 88rem;
-    min-height: 0;
-    margin-inline: auto;
-  }
-
-  .skills-stack__stage {
-    position: relative;
-    flex: 1;
-    width: 100%;
-    min-height: clamp(16rem, 42vh, 28rem);
-    display: grid;
-    place-items: center;
-  }
-
-  .skills-stack__label {
-    position: relative;
-    z-index: 3;
-    margin: 0;
-    font-size: clamp(2rem, 4.5vw, 3.5rem);
-    line-height: 1;
-    letter-spacing: -0.08em;
-    color: #fff;
-    text-align: center;
-    pointer-events: none;
-  }
-
-  .skills-stack__icons {
-    position: absolute;
-    inset: 0;
+    flex-wrap: wrap;
+    gap: 0.55rem;
     margin: 0;
     padding: 0;
     list-style: none;
-    pointer-events: none;
   }
 
-  .skills-stack__icons.is-stack-transitioning .skills-stack__icon-inner {
-    animation: none;
-    will-change: transform, opacity, filter;
+  .skills-tool {
+    display: inline-block;
+    padding: 0.48rem 0.72rem 0.52rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(0, 0, 0, 0.45);
+    font-family: var(--font-sans);
+    font-size: 0.92rem;
+    line-height: 1.2;
+    letter-spacing: -0.011em;
+    color: rgba(255, 255, 255, 0.82);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
   }
 
-  .skills-stack__icon {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
-    transform: translate(-50%, -50%);
+  .skills-tool:hover {
+    border-color: #fff;
+    background: #fff;
+    color: #000;
   }
 
-  .skills-stack__icon-inner {
-    display: block;
-    transform: rotate(var(--rotate)) scale(var(--scale));
-    animation: skills-icon-float 5.5s ease-in-out infinite;
-    animation-delay: var(--float-delay);
-    will-change: transform;
-  }
-
-  .skills-stack__icon img {
-    display: block;
-    width: clamp(2.5rem, 4.8vw, 3.75rem);
-    height: clamp(2.5rem, 4.8vw, 3.75rem);
-    object-fit: contain;
-    opacity: 0.88;
-    filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.1));
-  }
-
-  @keyframes skills-icon-float {
-    0%,
-    100% {
-      transform: rotate(var(--rotate)) scale(var(--scale)) translateY(0);
-    }
-    50% {
-      transform: rotate(var(--rotate)) scale(var(--scale)) translateY(-0.65rem);
-    }
-  }
-
-  @media (max-width: 640px) {
-    .skills-section__tour-stage {
-      padding-block: clamp(4.5rem, 12vh, 5.5rem) clamp(2.5rem, 5vh, 3rem);
-    }
-
+  @media (max-width: 700px) {
     .skills-section__title {
-      font-size: clamp(1.35rem, 5.2vw, 1.9rem);
+      max-width: none;
     }
 
-    .skills-stack__stage {
-      min-height: clamp(14rem, 38vh, 20rem);
-    }
-
-    .skills-stack__icon img {
-      width: clamp(2.4rem, 8.5vw, 3.15rem);
-      height: clamp(2.4rem, 8.5vw, 3.15rem);
+    .skills-row {
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .skills-section {
-      opacity: 1;
-      will-change: auto;
-      visibility: visible;
-      pointer-events: auto;
-    }
-
-    .skills-stack__icon-inner {
-      animation: none;
+    .skills-tool {
+      transition: none;
     }
   }
 </style>
 
 <script>
-  import { setupSkillsChapter } from "../lib/scroll/skillsChapter";
+  import { gsap } from "gsap";
+  import { WORK_SCROLL } from "../lib/scroll/scrollConfig";
 
   const section = document.querySelector<HTMLElement>("[data-skills-section]");
-  const trackEl = section?.querySelector<HTMLElement>("[data-skills-tour-track]");
-  const stageEl = section?.querySelector<HTMLElement>("[data-skills-tour-stage]");
-  const labelEl = section?.querySelector<HTMLElement>("[data-skills-label]");
-  const layers = [
-    ...section?.querySelectorAll<HTMLElement>("[data-skills-icon-layer]") ?? [],
-  ];
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let typewriter: gsap.core.Tween | null = null;
 
-  let disposeSkillsChapter: (() => void) | undefined;
+  section?.querySelectorAll<HTMLElement>("[data-skills-row]").forEach((row) => {
+    const title = row.querySelector<HTMLElement>("[data-stack-title]");
+    const typed = row.querySelector<HTMLElement>(".skills-row__typed");
+    const label = title?.dataset.stackTitle ?? "";
+    if (!title || !typed || !label) return;
 
-  if (section && trackEl && stageEl && labelEl && layers.length > 0) {
-    disposeSkillsChapter = setupSkillsChapter({
-      section,
-      trackEl,
-      stageEl,
-      labelEl,
-      layers,
-    });
-  }
+    const play = () => {
+      typewriter?.kill();
+      row.classList.add("is-skills-hover");
+      if (reduceMotion) {
+        typed.textContent = label;
+        return;
+      }
+      typed.textContent = "";
+      const state = { chars: 0 };
+      typewriter = gsap.to(state, {
+        chars: label.length,
+        duration: WORK_SCROLL.typewriterDuration,
+        ease: "power2.out",
+        onUpdate: () => {
+          typed.textContent = label.slice(0, Math.round(state.chars));
+        },
+        onComplete: () => {
+          typed.textContent = label;
+          typewriter = null;
+        },
+      });
+    };
+
+    const stop = () => {
+      typewriter?.kill();
+      typewriter = null;
+      row.classList.remove("is-skills-hover");
+      typed.textContent = "";
+    };
+
+    row.addEventListener("mouseenter", play);
+    row.addEventListener("mouseleave", stop);
+  });
 
   document.addEventListener("astro:beforeunload", () => {
-    disposeSkillsChapter?.();
+    typewriter?.kill();
   });
 </script>

@@ -4,8 +4,10 @@
  * La inercia por defecto de GSAP dura 2.8s y se come secciones enteras.
  */
 export const MOBILE_SCROLL = {
-  wheelSpeed: 0.46,
-  momentum: 1.35,
+  wheelSpeed: 0.22,
+  momentum: 0.38,
+  /** El arrastre del dedo es 1:1. Más distancia = el mismo gesto avanza menos. */
+  distance: 2,
 } as const;
 
 /** Lenis — scroll suave global (más bajo lerp / wheel = más lento). */
@@ -54,16 +56,6 @@ export const WORK_SCROLL = {
   clickScrollDuration: 1.75,
   /** Duración de la transición grid directa al clicar (origen → destino). */
   clickTransitionDuration: 1.75,
-} as const;
-
-export const SKILLS_SCROLL = {
-  scrollPerStackVh: 40,
-  stackHoldShare: 0.45,
-  firstStackHoldShare: 0.55,
-  labelTypewriterDuration: 0.32,
-  scrub: 0.38,
-  enterOffsetY: 52,
-  entranceScrub: 0.45,
 } as const;
 
 export const CONTACT_SCROLL = {

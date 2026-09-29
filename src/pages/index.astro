@@ -1,17 +1,21 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Nav from "../components/Nav.astro";
-import Hero from "../components/Hero.astro";
+import LetterField from "../components/LetterField.astro";
+import NameReel from "../components/NameReel.astro";
+import AboutPortrait from "../components/AboutPortrait.astro";
 import Projects from "../components/Projects.astro";
 import Skills from "../components/Skills.astro";
 import Contact from "../components/Contact.astro";
 ---
 
 <Layout>
+  <LetterField />
   <Nav />
-  <main id="main" class="relative z-0">
+  <main id="main" class="relative z-[1]">
+    <NameReel />
+    <AboutPortrait />
     <div class="chapter-hero-work">
-      <Hero />
       <Projects />
       <Skills />
     </div>

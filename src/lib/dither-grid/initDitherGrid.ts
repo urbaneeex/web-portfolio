@@ -19,6 +19,16 @@ export type DitherGridOptions = {
   onAnimationComplete?: () => void;
   /** Activa el efecto de repulsión del ratón sobre las celdas. */
   enableMouseRepel?: boolean;
+  /** Radio del alboroto. El contacto usa el valor por defecto. */
+  mouseRadius?: number;
+  /** Empuje de los píxeles. El contacto usa el valor por defecto. */
+  mouseStrength?: number;
+  /** El hero escucha este evento. Las demás instancias no deben emitirlo. */
+  emitReadyEvent?: boolean;
+  /** El blanco del dither no se pinta, para dejar ver la cuadrícula de la página. */
+  clearBackground?: boolean;
+  /** La figura y el fondo se pintan con letras que van cambiando. */
+  glyphField?: boolean;
 };
 
 export function initDitherGrid(options: DitherGridOptions) {
@@ -32,10 +42,15 @@ export function initDitherGrid(options: DitherGridOptions) {
     gridRows = preserveImageAspect ? 225 : 400,
     onAnimationComplete,
     enableMouseRepel = false,
+    mouseRadius = 11,
+    mouseStrength = 8,
+    emitReadyEvent = true,
+    clearBackground = false,
+    glyphField = false,
   } = options;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color("#ffffff");
+  if (!clearBackground) scene.background = new THREE.Color("#ffffff");
 
   const camera = new THREE.OrthographicCamera();
   camera.position.set(0, 0, 1000);
@@ -52,16 +67,21 @@ export function initDitherGrid(options: DitherGridOptions) {
   try {
     renderer = new THREE.WebGLRenderer({
       canvas,
+      alpha: clearBackground,
       antialias: !isMobileViewport(),
       powerPreference: isMobileViewport() ? "low-power" : "high-performance",
     });
+    if (clearBackground) renderer.setClearColor(0x000000, 0);
   } catch {
     canvas.classList.add("is-ready");
     onAnimationComplete?.();
-    window.dispatchEvent(new CustomEvent("dither-animation-complete"));
+    if (emitReadyEvent) {
+      window.dispatchEvent(new CustomEvent("dither-animation-complete"));
+    }
     return {
       setScrollZoom: () => {},
       setScrollZoomIn: () => {},
+      setFigureWave: () => {},
       dispose: () => {},
     };
   }
@@ -99,6 +119,13 @@ export function initDitherGrid(options: DitherGridOptions) {
   cameraAnchor.rotation.set(0, 0, 0);
 
   imageGrid.material.uniforms.uDitherProgress.value = 1;
+  imageGrid.material.uniforms.uMouseRadius.value = mouseRadius;
+  imageGrid.material.uniforms.uMouseStrength.value = mouseStrength;
+  imageGrid.material.uniforms.uClearBackground.value = clearBackground ? 1 : 0;
+  if (clearBackground) {
+    imageGrid.material.transparent = true;
+    imageGrid.material.depthWrite = false;
+  }
   imageGrid.material.uniforms.uGridOffsetStart.value = 0;
   imageGrid.material.uniforms.uGridOffsetEnd.value = 0.35;
 
@@ -336,7 +363,9 @@ export function initDitherGrid(options: DitherGridOptions) {
     if (didNotifyComplete) return;
     didNotifyComplete = true;
     onAnimationComplete?.();
-    window.dispatchEvent(new CustomEvent("dither-animation-complete"));
+    if (emitReadyEvent) {
+      window.dispatchEvent(new CustomEvent("dither-animation-complete"));
+    }
   };
 
   const drawFrame = (p: number) => {
@@ -396,6 +425,174 @@ export function initDitherGrid(options: DitherGridOptions) {
   const renderFrame = () => {
     if (!textureReady) return;
     drawFrame(savedProgress);
+  };
+
+  let figureCenterX = 0;
+  let figureCenterY = 0;
+  let figureMeasured = false;
+  let figureMeasureKey = "";
+  let contourTexture: THREE.DataTexture | null = null;
+
+  const coverSt = (
+    stX: number,
+    stY: number,
+    srcAspect: number,
+    dstAspect: number,
+    aspectCover: boolean,
+  ) => {
+    let x = stX;
+    let y = stY;
+    if (srcAspect > dstAspect) {
+      const scale = dstAspect / srcAspect;
+      const fit = aspectCover ? scale : 1 / scale;
+      x = (x - 0.5) * fit + 0.5;
+    } else {
+      const scale = srcAspect / dstAspect;
+      const fit = aspectCover ? scale : 1 / scale;
+      y = (y - 0.5) * fit + 0.5;
+    }
+    return { x, y };
+  };
+
+  /** Centro y tamaño de la silueta oscura, en el espacio de la rejilla. */
+  const measureFigure = () => {
+    const aspectCover = viewAspect < 1 && !preserveImageAspect;
+    const key = `${viewAspect.toFixed(3)}:${aspectCover ? 1 : 0}`;
+    if (figureMeasured && key === figureMeasureKey) return;
+
+    const tex = imageGrid.material.uniforms.uTexture.value as THREE.Texture | null;
+    const img = tex?.image as HTMLImageElement | undefined;
+    if (!img?.width || !img?.height) return;
+
+    const sample = 180;
+    const probe = document.createElement("canvas");
+    probe.width = sample;
+    probe.height = sample;
+    const ctx = probe.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return;
+    ctx.drawImage(img, 0, 0, sample, sample);
+    const pixels = ctx.getImageData(0, 0, sample, sample).data;
+
+    const srcAspect = img.width / img.height;
+    const dstAspect = gridColumns / Math.max(gridRows, 1);
+    const count = gridColumns * gridRows;
+    const lum = new Float32Array(count);
+    const at = (col: number, row: number) => {
+      const stX = col / (gridColumns - 1);
+      const stY = (gridRows - 1 - row) / (gridRows - 1);
+      const uv = coverSt(stX, stY, srcAspect, dstAspect, aspectCover);
+      if (uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1) return 1;
+      const px = Math.min(sample - 1, Math.max(0, Math.floor(uv.x * (sample - 1))));
+      const py = Math.min(sample - 1, Math.max(0, Math.floor((1 - uv.y) * (sample - 1))));
+      const i = (py * sample + px) * 4;
+      return (pixels[i] + pixels[i + 1] + pixels[i + 2]) / (3 * 255);
+    };
+
+    let sx = 0;
+    let sy = 0;
+    let n = 0;
+    for (let row = 0; row < gridRows; row += 1) {
+      for (let col = 0; col < gridColumns; col += 1) {
+        const value = at(col, row);
+        lum[row * gridColumns + col] = value;
+        if (value > 0.42) continue;
+        sx += col - (gridColumns - 1) / 2;
+        sy += -row + (gridRows - 1) / 2;
+        n += 1;
+      }
+    }
+    if (n < 8) return;
+
+    const outside = new Uint8Array(count);
+    const stack: number[] = [];
+    const pushBg = (col: number, row: number) => {
+      if (col < 0 || row < 0 || col >= gridColumns || row >= gridRows) return;
+      const i = row * gridColumns + col;
+      if (outside[i] || lum[i] < 0.88) return;
+      outside[i] = 1;
+      stack.push(i);
+    };
+    for (let col = 0; col < gridColumns; col += 1) {
+      pushBg(col, 0);
+      pushBg(col, gridRows - 1);
+    }
+    for (let row = 0; row < gridRows; row += 1) {
+      pushBg(0, row);
+      pushBg(gridColumns - 1, row);
+    }
+    while (stack.length) {
+      const i = stack.pop() as number;
+      const col = i % gridColumns;
+      const row = (i - col) / gridColumns;
+      pushBg(col + 1, row);
+      pushBg(col - 1, row);
+      pushBg(col, row + 1);
+      pushBg(col, row - 1);
+    }
+
+    const data = new Uint8Array(count * 4);
+    const write = (col: number, row: number, weight: number, nx: number, ny: number) => {
+      if (col < 0 || row < 0 || col >= gridColumns || row >= gridRows) return;
+      if (lum[row * gridColumns + col] > 0.42) return;
+      const len = Math.hypot(nx, ny);
+      if (len < 0.001) return;
+      const stY = (gridRows - 1 - row) / (gridRows - 1);
+      const iy = Math.round(stY * (gridRows - 1));
+      const p = (iy * gridColumns + col) * 4;
+      const next = Math.round(weight * 255);
+      if (data[p] >= next) return;
+      data[p] = next;
+      data[p + 1] = Math.round((nx / len * 0.5 + 0.5) * 255);
+      data[p + 2] = Math.round((ny / len * 0.5 + 0.5) * 255);
+      data[p + 3] = 255;
+    };
+
+    for (let row = 0; row < gridRows; row += 1) {
+      for (let col = 0; col < gridColumns; col += 1) {
+        const i = row * gridColumns + col;
+        if (lum[i] > 0.42) continue;
+        let nx = 0;
+        let ny = 0;
+        if (col + 1 < gridColumns && outside[i + 1]) nx += 1;
+        if (col > 0 && outside[i - 1]) nx -= 1;
+        if (row > 0 && outside[i - gridColumns]) ny += 1;
+        if (row + 1 < gridRows && outside[i + gridColumns]) ny -= 1;
+        if (nx === 0 && ny === 0) continue;
+        write(col, row, 1, nx, ny);
+        write(col + 1, row, 0.45, nx, ny);
+        write(col - 1, row, 0.45, nx, ny);
+        write(col, row - 1, 0.45, nx, ny);
+        write(col, row + 1, 0.45, nx, ny);
+      }
+    }
+
+    contourTexture?.dispose();
+    contourTexture = new THREE.DataTexture(data, gridColumns, gridRows, THREE.RGBAFormat);
+    contourTexture.flipY = false;
+    contourTexture.magFilter = THREE.LinearFilter;
+    contourTexture.minFilter = THREE.LinearFilter;
+    contourTexture.wrapS = THREE.ClampToEdgeWrapping;
+    contourTexture.wrapT = THREE.ClampToEdgeWrapping;
+    contourTexture.colorSpace = THREE.NoColorSpace;
+    contourTexture.needsUpdate = true;
+    imageGrid.material.uniforms.uContour.value = contourTexture;
+
+    figureCenterX = sx / n;
+    figureCenterY = sy / n;
+    figureMeasured = true;
+    figureMeasureKey = key;
+  };
+
+  /** Onda suave que recorre el contorno. t 0 = empieza, 1 = da la vuelta. */
+  const setFigureWave = (t: number) => {
+    const clamped = Math.max(0, Math.min(1, t));
+    measureFigure();
+    const uniforms = imageGrid.material.uniforms;
+    const scaleX = imageGrid.group.scale.x || 1;
+    const scaleY = imageGrid.group.scale.y || 1;
+    uniforms.uWaveCenter.value.set(figureCenterX * scaleX, figureCenterY * scaleY);
+    uniforms.uWaveTravel.value = clamped;
+    uniforms.uWaveActive.value = Math.sin(clamped * Math.PI);
   };
 
   /** scroll 0 = imagen formada, scroll 1 = zoom in (hero) */
@@ -465,6 +662,61 @@ export function initDitherGrid(options: DitherGridOptions) {
     revealScene();
   }
 
+  let glyphTexture: THREE.CanvasTexture | null = null;
+  let glyphRaf = 0;
+
+  const paintGlyphAtlas = () => {
+    const cols = 8;
+    const rows = 4;
+    const cell = 64;
+    const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".slice(0, cols * rows);
+    const atlas = document.createElement("canvas");
+    atlas.width = cols * cell;
+    atlas.height = rows * cell;
+    const ctx = atlas.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, atlas.width, atlas.height);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `600 ${Math.floor(cell * 0.72)}px "Aux Mono", ui-monospace, monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    for (let i = 0; i < chars.length; i += 1) {
+      const c = i % cols;
+      const r = Math.floor(i / cols);
+      ctx.fillText(chars[i], c * cell + cell / 2, r * cell + cell / 2 + 2);
+    }
+    glyphTexture?.dispose();
+    glyphTexture = new THREE.CanvasTexture(atlas);
+    glyphTexture.colorSpace = THREE.NoColorSpace;
+    glyphTexture.flipY = true;
+    glyphTexture.minFilter = THREE.LinearFilter;
+    glyphTexture.magFilter = THREE.LinearFilter;
+    glyphTexture.generateMipmaps = false;
+    glyphTexture.needsUpdate = true;
+    const uniforms = imageGrid.material.uniforms;
+    uniforms.uGlyphs.value = glyphTexture;
+    uniforms.uGlyphCount.value = chars.length;
+    uniforms.uGlyphGrid.value.set(cols, rows);
+    uniforms.uGlyphMode.value = 1;
+    if (textureReady) drawFrame(savedProgress);
+  };
+
+  const tickGlyphs = (now: number) => {
+    imageGrid.material.uniforms.uGlyphTime.value = now * 0.001;
+    if (textureReady) drawFrame(savedProgress);
+    glyphRaf = requestAnimationFrame(tickGlyphs);
+  };
+
+  if (glyphField) {
+    const startGlyphs = () => {
+      paintGlyphAtlas();
+      if (!glyphRaf) glyphRaf = requestAnimationFrame(tickGlyphs);
+    };
+    const ready = document.fonts?.load?.('600 64px "Aux Mono"');
+    if (ready) ready.then(startGlyphs).catch(startGlyphs);
+    else startGlyphs();
+  }
+
   // ── Mouse repel ──────────────────────────────────────────────────────────
   let mouseRafId = 0;
   let mouseTargetActive = 0;
@@ -532,6 +784,7 @@ export function initDitherGrid(options: DitherGridOptions) {
   return {
     setScrollZoom,
     setScrollZoomIn,
+    setFigureWave,
     dispose() {
       if (enableMouseRepel) {
         canvas.removeEventListener("mousemove", onMouseMove);
@@ -541,10 +794,16 @@ export function initDitherGrid(options: DitherGridOptions) {
         cancelAnimationFrame(mouseRafId);
         mouseRafId = 0;
       }
+      if (glyphRaf) {
+        cancelAnimationFrame(glyphRaf);
+        glyphRaf = 0;
+      }
+      glyphTexture?.dispose();
       resizeObserver.disconnect();
       timeline.pause();
       timeline.cancel();
       imageGrid.hideFrom(scene);
+      contourTexture?.dispose();
       imageGrid.dispose();
       renderer.dispose();
     },

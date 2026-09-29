@@ -1,21 +1,64 @@
 ---
-import { nav, site, menuSocials } from "../data/site";
+import { nav, menuSocials } from "../data/site";
 ---
 
+<svg class="nav-glass-svg" aria-hidden="true" focusable="false">
+  <filter
+    id="glass-distortion"
+    x="-5%"
+    y="-20%"
+    width="110%"
+    height="140%"
+    filterUnits="objectBoundingBox"
+  >
+    <feTurbulence
+      type="fractalNoise"
+      baseFrequency="0.01 0.01"
+      numOctaves="1"
+      seed="5"
+      result="turbulence"
+    />
+    <feComponentTransfer in="turbulence" result="mapped">
+      <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
+      <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
+      <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
+    </feComponentTransfer>
+    <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
+    <feSpecularLighting
+      in="softMap"
+      surfaceScale="5"
+      specularConstant="1"
+      specularExponent="100"
+      lighting-color="white"
+      result="specLight"
+    >
+      <fePointLight x="-200" y="-200" z="300" />
+    </feSpecularLighting>
+    <feComposite
+      in="specLight"
+      operator="arithmetic"
+      k1="0"
+      k2="1"
+      k3="1"
+      k4="0"
+      result="litImage"
+    />
+    <feDisplacementMap
+      in="SourceGraphic"
+      in2="softMap"
+      scale="200"
+      xChannelSelector="R"
+      yChannelSelector="G"
+    />
+  </filter>
+</svg>
+<div class="liquidGlass-wrapper nav-glass" data-nav-blur aria-hidden="true">
+  <!-- Blur + máscara = degradado natural. Distorsión solo en zona superior (mask rompe el SVG filter). -->
+  <div class="nav-glass__blur"></div>
+  <div class="liquidGlass-effect nav-glass__distort"></div>
+</div>
 <header id="site-nav" class="site-nav fixed inset-x-0 top-0 z-50" data-nav>
   <nav class="page-x nav-bar" aria-label="Primary">
-    <h1
-      data-hero-name
-      data-first={site.firstName}
-      data-last={site.lastName}
-      aria-label={`${site.firstName} ${site.lastName}`}
-      class="hero-name font-pixel nav-bar__brand pointer-events-none min-w-0 shrink leading-[1.02]"
-    >
-      <span class="block min-h-[1em] whitespace-nowrap">
-        <span id="hero-tw-text"></span><span id="hero-tw-cursor" class="typewriter-cursor">|</span>
-      </span>
-    </h1>
-
     <button
       type="button"
       class="nav-toggle"
@@ -77,14 +120,88 @@ import { nav, site, menuSocials } from "../data/site";
 </header>
 
 <style>
+  .nav-glass-svg {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+
+  /* Misma altura que el nav. Degradado natural vía mask en el blur (sin bandas). */
+  .liquidGlass-wrapper.nav-glass {
+    --nav-glass-h: 4.5rem;
+    position: fixed;
+    z-index: 49;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--nav-glass-h);
+    display: block;
+    overflow: hidden;
+    pointer-events: none;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    transition: opacity 0.35s ease;
+  }
+
+  .nav-glass__blur {
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    -webkit-mask-image: linear-gradient(
+      180deg,
+      #000 0%,
+      #000 42%,
+      rgba(0, 0, 0, 0.75) 58%,
+      rgba(0, 0, 0, 0.4) 74%,
+      rgba(0, 0, 0, 0.12) 88%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      180deg,
+      #000 0%,
+      #000 42%,
+      rgba(0, 0, 0, 0.75) 58%,
+      rgba(0, 0, 0, 0.4) 74%,
+      rgba(0, 0, 0, 0.12) 88%,
+      transparent 100%
+    );
+  }
+
+  .nav-glass__distort {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 58%;
+    overflow: hidden;
+    isolation: isolate;
+    background: transparent;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    filter: url(#glass-distortion);
+    -webkit-filter: url(#glass-distortion);
+    /* Sin mask aquí: el SVG filter la anula; el fade natural lo lleva el blur */
+  }
+
+  .nav-glass.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+
   .nav-bar {
+    --nav-pad-y: clamp(0.85rem, 2.4vh, 1.15rem);
     position: relative;
     display: flex;
     width: 100%;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding-block: clamp(1.1rem, 3vh, 1.5rem);
+    padding-top: var(--nav-pad-y);
+    padding-bottom: var(--nav-pad-y);
   }
 
   .nav-bar__brand {
@@ -172,15 +289,20 @@ import { nav, site, menuSocials } from "../data/site";
     display: none;
   }
 
+  @media (min-width: 768px) {
+    .nav-menu {
+      margin-left: auto;
+    }
+
+    .nav-menu__link {
+      font-size: 1.0625rem;
+      letter-spacing: -0.05em;
+      color: inherit;
+      text-decoration: none;
+    }
+  }
+
   @media (max-width: 767px) {
-    .nav-bar {
-      flex-direction: row-reverse;
-    }
-
-    .nav-bar__brand {
-      text-align: right;
-    }
-
     .nav-toggle {
       display: flex;
       align-items: center;
@@ -213,7 +335,6 @@ import { nav, site, menuSocials } from "../data/site";
     }
 
     .site-nav.is-menu-open nav {
-      mix-blend-mode: normal;
       color: #fff;
     }
 
@@ -320,17 +441,11 @@ import { nav, site, menuSocials } from "../data/site";
     }
   }
 
-  @media (min-width: 768px) {
-    .nav-menu__link {
-      font-size: 1.0625rem;
-      letter-spacing: -0.05em;
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .nav-menu,
     .nav-menu__link,
-    .nav-toggle__line {
+    .nav-toggle__line,
+    .liquidGlass-wrapper {
       transition: none;
     }
 
@@ -346,7 +461,6 @@ import { nav, site, menuSocials } from "../data/site";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   import { setupScrollNavLinks } from "../lib/scroll/navScroll";
   import { enableMobileScrollNormalizer, getLenis } from "../lib/scroll/initLenis";
-  import { SCROLL_EVENTS } from "../lib/scroll/scrollConfig";
 
   gsap.registerPlugin(ScrollTrigger);
 
@@ -400,10 +514,18 @@ import { nav, site, menuSocials } from "../data/site";
   }
 
   const navEl = document.getElementById("site-nav");
+  const blurEl = document.querySelector<HTMLElement>("[data-nav-blur]");
+
+  const syncNavGlassHeight = () => {
+    if (!navEl || !blurEl) return;
+    const navH = navEl.getBoundingClientRect().height;
+    blurEl.style.setProperty("--nav-glass-h", `${navH}px`);
+  };
+
+  syncNavGlassHeight();
+  document.fonts?.ready.then(syncNavGlassHeight);
   const toggleBtn = document.querySelector<HTMLButtonElement>("[data-nav-toggle]");
   const menuEl = document.querySelector<HTMLElement>("[data-nav-menu]");
-  const heroSection = document.getElementById("hero-scene");
-  const contactSection = document.querySelector<HTMLElement>("[data-contact-section]");
   let menuScrollY = 0;
 
   const setMenuOpen = (open: boolean) => {
@@ -411,6 +533,7 @@ import { nav, site, menuSocials } from "../data/site";
     if (navEl.classList.contains("is-menu-open") === open) return;
 
     navEl.classList.toggle("is-menu-open", open);
+    blurEl?.classList.toggle("is-hidden", open);
     toggleBtn.setAttribute("aria-expanded", String(open));
     toggleBtn.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
     menuEl.setAttribute("aria-hidden", String(!open));
@@ -454,44 +577,9 @@ import { nav, site, menuSocials } from "../data/site";
 
   const handleViewportChange = () => {
     if (!MOBILE_NAV_MQ.matches) setMenuOpen(false);
+    syncNavGlassHeight();
   };
 
   MOBILE_NAV_MQ.addEventListener("change", handleViewportChange);
   window.addEventListener("resize", handleViewportChange, { passive: true });
-
-  const sectionUnderNav = (el: HTMLElement, navH: number) => {
-    const { top, bottom } = el.getBoundingClientRect();
-    return top < navH && bottom > 0;
-  };
-
-  const updateNavContrast = () => {
-    if (!navEl) return;
-    const navH = navEl.getBoundingClientRect().height;
-    let onLightBg = false;
-
-    if (heroSection && sectionUnderNav(heroSection, navH)) {
-      onLightBg = !heroSection.classList.contains("hero-scene--black");
-    }
-
-    if (contactSection && sectionUnderNav(contactSection, navH)) {
-      onLightBg = true;
-    }
-
-    navEl.classList.toggle("nav--on-light", onLightBg);
-  };
-
-  const bindNavContrastScroll = () => {
-    updateNavContrast();
-    const lenis = getLenis();
-    if (lenis) {
-      lenis.on("scroll", updateNavContrast);
-    } else {
-      window.addEventListener("scroll", updateNavContrast, { passive: true });
-    }
-  };
-
-  bindNavContrastScroll();
-  requestAnimationFrame(bindNavContrastScroll);
-  window.addEventListener("resize", updateNavContrast, { passive: true });
-  window.addEventListener(SCROLL_EVENTS.heroZoomChange, updateNavContrast);
 </script>
